@@ -142,30 +142,37 @@
 <p>释放 AgConnect 库内部分配的内存。在此调用之后，可以关闭应用程序。</p>
 <p>的示例代码示出了打开到STK的连接，负载的情形下，发送AllAccess连接命令，关闭连接并打印出该数据的完整的程序。按照以下步骤在 Visual Studio 中设置 C++ 连接示例代码。</p>
 <h4 id="在-Visual-Studio-中设置-C-Connect-示例"><a href="#在-Visual-Studio-中设置-C-Connect-示例" class="headerlink" title="在 Visual Studio 中设置 C++ Connect 示例"></a>在 Visual Studio 中设置 C++ Connect 示例</h4><ol>
-<li>打开 Visual Studio。</li>
-<li>创建一个新项目。</li>
-<li>在 Visual C++ &gt; 其他下，选择空项目。</li>
-<li>为您的项目输入一个名称，然后单击“确定”。</li>
-<li>在解决方案资源管理器中，右键单击 Source Files 文件夹并选择 Add &gt; New Item… 。</li>
-<li>选择 C++ 文件并输入文件名，然后单击确定。</li>
-<li>使用上面的示例代码链接并复制该页面上的所有文本。</li>
-<li>将文本粘贴到您的“cpp”文件中。</li>
-<li>确保您选择了 x64 配置，因为 STK 是 64 位应用程序。</li>
-<li>右键单击项目并选择属性，然后按照以下步骤操作：</li>
-</ol>
-<p>   a. 在 VC++ 目录下：</p>
-<pre><code> i. 将 &lt;代码示例位置&gt;\Connect\Includes 添加到“包含目录”。
- 
- ii. 将 &lt;代码示例位置&gt;\Connect\lib\Debug 添加到“库目录”。
- 
-b. 在 C/C++ &gt; Preprocessor 下，将“AGCONNECT”添加到“Preprocessor Definitions”。
-
-c. 在链接器 &gt; 输入下，将“agconnect.lib”添加到“附加依赖项”。
-</code></pre>
-<ol start="11">
-<li>确保您已使用 STK 安装路径更新了 Load 命令。</li>
-<li>构建项目。</li>
-<li>构建项目后，将 AgConnect.dll 从 &lt;代码示例位置&gt;\Connect\bin\Debug 复制到项目的输出目录。</li>
+<li><p>打开 Visual Studio。</p>
+</li>
+<li><p>创建一个新项目。</p>
+</li>
+<li><p>在 Visual C++ &gt; 其他下，选择空项目。</p>
+</li>
+<li><p>为您的项目输入一个名称，然后单击“确定”。</p>
+</li>
+<li><p>在解决方案资源管理器中，右键单击 Source Files 文件夹并选择 Add &gt; New Item… 。</p>
+</li>
+<li><p>选择 C++ 文件并输入文件名，然后单击确定。</p>
+</li>
+<li><p>使用上面的示例代码链接并复制该页面上的所有文本。</p>
+</li>
+<li><p>将文本粘贴到您的“cpp”文件中。</p>
+</li>
+<li><p>确保您选择了 x64 配置，因为 STK 是 64 位应用程序。</p>
+</li>
+<li><p>右键单击项目并选择属性，然后按照以下步骤操作：</p>
+<p>a. 在 VC++ 目录下：</p>
+<p>   i. 将 &lt;代码示例位置&gt;\Connect\Includes 添加到“包含目录”。</p>
+<p>   ii. 将 &lt;代码示例位置&gt;\Connect\lib\Debug 添加到“库目录”。</p>
+<p>b. 在 C/C++ &gt; Preprocessor 下，将“AGCONNECT”添加到“Preprocessor Definitions”。</p>
+<p>c. 在链接器 &gt; 输入下，将“agconnect.lib”添加到“附加依赖项”。</p>
+</li>
+<li><p>确保您已使用 STK 安装路径更新了 Load 命令。</p>
+</li>
+<li><p>构建项目。</p>
+</li>
+<li><p>构建项目后，将 AgConnect.dll 从 &lt;代码示例位置&gt;\Connect\bin\Debug 复制到项目的输出目录。</p>
+</li>
 </ol>
 
       
