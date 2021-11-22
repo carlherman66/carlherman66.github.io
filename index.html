@@ -71,6 +71,69 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-Python更新数据库速度慢的问题" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/2021/11/22/Python%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/" class="article-date">
+  <time class="dt-published" datetime="2021-11-22T08:42:50.000Z" itemprop="datePublished">2021-11-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/2021/11/22/Python%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">Python更新数据库速度慢的问题</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p><strong>最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用UPDATE进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行</strong></p>
+<blockquote>
+<ul>
+<li>先写sql语句。要注意的是里面的参数， 不管什么类型，统一使用%s作为占位符，例如，向satellite表(name,latitude,longitude,altitude)插入数据</li>
+</ul>
+</blockquote>
+<p><code>sql = &#39;INSERT INTO satellite(name,latitude,longitude,altitude) VALUES(%s,%s,%s,%s)&#39;</code></p>
+<blockquote>
+<ul>
+<li>对应的param是一个tuple或者list</li>
+</ul>
+</blockquote>
+<p><code>param = ((name1,latitude1,longitude1,altitude1), (name2,latitude2,longitude2,altitude2))</code></p>
+<blockquote>
+<ul>
+<li>这样就包含了两条数据，通过executemany插入</li>
+</ul>
+</blockquote>
+<p><code>cursor.executemany(sql,param)</code></p>
+<p>将update换成insert后，写1584条数据时间从原先的几十秒变成不到一秒。</p>
+<h4 id="解决Field-‘node-id’-doesn’t-have-a-default-value-问题"><a href="#解决Field-‘node-id’-doesn’t-have-a-default-value-问题" class="headerlink" title="解决Field ‘node_id’ doesn’t have a default value 问题"></a>解决Field ‘node_id’ doesn’t have a default value 问题</h4><pre><code>    写入数据库时报上述错误，其主要原因是因为mysql的中没有将主键设置为自增，所以在增加元素时获取生成主键时出现异常，将主键设为自增后错误消失。
+</code></pre>
+<h4 id="解决删除表后重新INSERT时主键不从1开始的问题"><a href="#解决删除表后重新INSERT时主键不从1开始的问题" class="headerlink" title="解决删除表后重新INSERT时主键不从1开始的问题"></a>解决删除表后重新INSERT时主键不从1开始的问题</h4><pre><code>    由于需要实时向数据库写卫星位置信息，第一次写完1584条数据后删除写第二次时，主键从1585开始，使用以下语句将表设为从1开始自增。
+</code></pre>
+<p><code>cursor.execute(&#39;alter table satellite_LLA_test auto_increment=1&#39;)</code></p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://carlherman66.github.io/2021/11/22/Python%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/" data-id="ckwaji82k0000y0um6tbjcwir" data-title="Python更新数据库速度慢的问题" class="article-share-link">Share</a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
     <article id="post-STK-Python-API" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
     <a href="/2021/11/09/STK-Python-API/" class="article-date">
@@ -325,6 +388,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/2021/11/22/Python%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">Python更新数据库速度慢的问题</a>
+          </li>
         
           <li>
             <a href="/2021/11/09/STK-Python-API/">STK Python API</a>
