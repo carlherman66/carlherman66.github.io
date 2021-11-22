@@ -6,15 +6,15 @@
   
   <title>Python更新数据库速度慢的问题 | LK&#39;Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用UPDATE进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行   先写sql语句。要注意的是里面的参数， 不管什么类型，统一使用%s作为占位符，例如，向satellite表(name,latitude,lo">
+  <meta name="description" content="最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用execute update一条一条进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行   先写sql语句。要注意的是里面的参数， 不管什么类型，统一使用%s作为占位符，例如，向satellite表(name">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Python更新数据库速度慢的问题">
 <meta property="og:url" content="http://carlherman66.github.io/2021/11/22/Python%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/index.html">
 <meta property="og:site_name" content="LK&#39;Blog">
-<meta property="og:description" content="最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用UPDATE进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行   先写sql语句。要注意的是里面的参数， 不管什么类型，统一使用%s作为占位符，例如，向satellite表(name,latitude,lo">
+<meta property="og:description" content="最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用execute update一条一条进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行   先写sql语句。要注意的是里面的参数， 不管什么类型，统一使用%s作为占位符，例如，向satellite表(name">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-11-22T08:42:50.000Z">
-<meta property="article:modified_time" content="2021-11-22T10:42:06.910Z">
+<meta property="article:modified_time" content="2021-11-22T10:43:57.415Z">
 <meta property="article:author" content="luokui">
 <meta name="twitter:card" content="summary">
   
@@ -95,7 +95,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p><strong>最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用UPDATE进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行</strong></p>
+        <p><strong>最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用execute update一条一条进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行</strong></p>
 <blockquote>
 <ul>
 <li>先写sql语句。要注意的是里面的参数， 不管什么类型，统一使用%s作为占位符，例如，向satellite表(name,latitude,longitude,altitude)插入数据</li>

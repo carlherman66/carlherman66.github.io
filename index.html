@@ -93,7 +93,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p><strong>最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用UPDATE进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行</strong></p>
+        <p><strong>最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用execute update一条一条进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行</strong></p>
 <blockquote>
 <ul>
 <li>先写sql语句。要注意的是里面的参数， 不管什么类型，统一使用%s作为占位符，例如，向satellite表(name,latitude,longitude,altitude)插入数据</li>
