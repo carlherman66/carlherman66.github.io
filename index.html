@@ -152,6 +152,108 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-OVS与Docker" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2021/12/28/OVS%E4%B8%8EDocker/">OVS与Docker</a>
+    </h1>
+  
+
+        
+        <a href="/2021/12/28/OVS%E4%B8%8EDocker/" class="archive-article-date">
+  	<time datetime="2021-12-28T12:49:27.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-12-28</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="一-Openvswitch工作原理"><a href="#一-Openvswitch工作原理" class="headerlink" title="一.Openvswitch工作原理"></a>一.Openvswitch工作原理</h4><p>　　OpenvSwitch是一个高质量的、多层虚拟交换机，使用开源Apache2.0许可协议，由 Nicira Networks开发，主要实现代码为可移植的C代码。它的目的是让大规模网络自动化可以通过编程扩展,同时仍然支持标准的管理接口和协议（例如NetFlow, sFlow, SPAN, RSPAN, CLI, LACP, 802.1ag）。此外,它被设计位支持跨越多个物理服务器的分布式环境，类似于VMware的vNetwork分布式vswitch或Cisco Nexus 1000 V。Open vSwitch支持多种Linux虚拟化技术，包括Xen/XenServer，KVM和VirtualBox。</p>
+<p>　　OpenvSwitch是一个虚拟交换软件，主要用于虚拟机VM环境，作为一个虚拟交换机，支持Xen/XenServer，KVM以及VirtualBox多种虚拟化技术。在这种虚拟化的环境中，一个虚拟交换机主要有两个作用：传递虚拟机之间的流量，以及实现虚拟机和外界网络的通信。</p>
+<p>　　内核模块实现了多个“数据路径”（类似于网桥），每个都可以有多个“vports”（类似于桥内的端口）。每个数据路径也通过关联一下流表（flow table）来设置操作，而这些流表中的流都是用户空间在报文头和元数据的基础上映射的关键信息，一般的操作都是将数据包转发到另一个vport。当一个数据包到达一个vport，内核模块所做的处理是提取其流的关键信息并在流表中查找这些关键信息。当有一个匹配的流时它执行对应的操作。如果没有匹配，它会将数据包送到用户空间的处理队列中（作为处理的一部分，用户空间可能会设置一个流用于以后碰到相同类型的数据包可以在内核中执行操作）。</p>
+<hr>
+<h5 id="1-OpenvSwitch的组成"><a href="#1-OpenvSwitch的组成" class="headerlink" title="1.OpenvSwitch的组成"></a>1.OpenvSwitch的组成</h5><p>　　OVS的主要组成模块如下图所示：</p>
+<p><img src="/2021/12/28/OVS%E4%B8%8EDocker/pasted-3.png" alt="OVS组成模块"></p>
+<pre><code>• ovs-vswitchd：OVS守护进程是，OVS的核心部件，实现交换功能，和Linux内核兼容模块一起，实现基于流的交换（flow-based switching）。它和上层 controller 通信遵从 OPENFLOW 协议，它与 ovsdb-server 通信使用 OVSDB 协议，它和内核模块通过netlink通信，它支持多个独立的 datapath（网桥），它通过更改flow table 实现了绑定和VLAN等功能。
+• ovsdb-server：轻量级的数据库服务，主要保存了整个OVS 的配置信息，包括接口啊，交换内容，VLAN啊等等。ovs-vswitchd 会根据数据库中的配置信息工作。它于 manager 和 ovs-vswitchd 交换信息使用了OVSDB(JSON-RPC)的方式。
+• ovs-dpctl：一个工具，用来配置交换机内核模块，可以控制转发规则。
+• ovs-vsctl：主要是获取或者更改ovs-vswitchd 的配置信息，此工具操作的时候会更新ovsdb-server 中的数据库。
+• ovs-appctl：主要是向OVS 守护进程发送命令的，一般用不上。
+• ovsdbmonitor：GUI 工具来显示ovsdb-server 中数据信息。
+• ovs-controller：一个简单的OpenFlow 控制器
+• ovs-ofctl：用来控制OVS 作为OpenFlow 交换机工作时候的流表内容。
+</code></pre>
+<h5 id="2-OpenvSwitch的工作流程"><a href="#2-OpenvSwitch的工作流程" class="headerlink" title="2. OpenvSwitch的工作流程"></a>2. OpenvSwitch的工作流程</h5><p>　　下图通过ovs实现虚拟机和外部通信的过程，通信流程如下：</p>
+<p><img src="/2021/12/28/OVS%E4%B8%8EDocker/pasted-4.png" alt="通信流程"></p>
+<ol>
+<li><p>VM实例 instance 产生一个数据包并发送至实例内的虚拟网络接口 VNIC，图中就是 instance 中的 eth0.</p>
+</li>
+<li><p>这个数据包会传送到物理机上的VNIC接口，如图就是vnet接口．</p>
+</li>
+<li><p>数据包从 vnet NIC 出来，到达桥（虚拟交换机） br100 上.</p>
+</li>
+<li><p>数据包经过交换机的处理，从物理节点上的物理接口发出，如图中物理机上的 eth0 .</p>
+</li>
+<li><p>数据包从 eth0 出去的时候，是按照物理节点上的路由以及默认网关操作的，这个时候该数 据包其实已经不受你的控制了．</p>
+<p>注：一般 L2 switch 连接 eth0 的这个口是一个 trunk 口, 因为虚拟机对应的 VNET 往往会设置 VLAN TAG, 可以通过对虚拟机对应的 vnet 打 VALN TAG 来控制虚拟机的网络广播域. 如果跑多个虚拟机的话, 多个虚拟机对应的 vnet 可以设置不同的 vlan tag, 那么这些虚拟机的数据包从 eth0(4)出去的时候, 会带上TAG标记. 这样也就必须是 trunk 口才行。</p>
+<h5 id="3-OpenvSwitch简单应用实例"><a href="#3-OpenvSwitch简单应用实例" class="headerlink" title="3.OpenvSwitch简单应用实例"></a>3.OpenvSwitch简单应用实例</h5><p>如下图所示，创建从物理机到物理机的网络拓扑：</p>
+</li>
+</ol>
+<p><img src="/2021/12/28/OVS%E4%B8%8EDocker/pasted-5.png" alt="1"><br>通过以下命令即可实现：</p>
+<pre><code>root:~# ovs-vsctl add-br br0 
+root:~# ovs-vsctl add-port br0 eth0 
+root:~# ovs-vsctl add-port br0 eth1
+</code></pre>
+<h4 id="二-安装OVS"><a href="#二-安装OVS" class="headerlink" title="二.安装OVS"></a>二.安装OVS</h4><pre><code>sudo apt-get update
+sudo apt-get install openvswitch-switch openvswitch-common
+</code></pre>
+<p><img src="/2021/12/28/OVS%E4%B8%8EDocker/pasted-6.png" alt="2"></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2021/12/28/OVS%E4%B8%8EDocker/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-MySql读写并发加锁" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
