@@ -16,7 +16,7 @@
 <meta property="og:description" content="关于STK Python API从历史上看，从 Python 与 STK 桌面和 STK 引擎的交互是使用win32com或comtypes Python 模块实现的。虽然这些方法仍然有效并且仍然受支持，但 STK Python API 提供了以下优点：  跨平台支持：假设遵循通常的跨平台 Python 准则，使用与 STK 引擎交互的新 API 编写的代码无需修改即可在 Windows 和 Li">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-11-09T02:38:23.000Z">
-<meta property="article:modified_time" content="2022-04-06T13:44:06.654Z">
+<meta property="article:modified_time" content="2022-04-06T13:53:29.705Z">
 <meta property="article:author" content="luokui">
 <meta property="article:tag" content="STK">
 <meta name="twitter:card" content="summary">
@@ -196,7 +196,7 @@
 <blockquote>
 <p><code>python -m pip install &quot;&lt;STK 安装目录&gt;/bin/AgPythonAPI/agi.stk 12 - 12.2.0 -py3-none-any.whl&quot;</code></p>
 </blockquote>
-<h4 id="验证安装"><a href="#验证安装" class="headerlink" title="验证安装"></a>验证安装</h4><p>确保有效的开发设置的最后一步是运行一个简单的程序来练习 API。在 Python 文件中，复制并粘贴下面的代码并运行它。一切都是为使用 STK 开发应用程序而设置的。</p>
+<h4 id="验证安装"><a href="#验证安装" class="headerlink" title="验证安装"></a>验证安装</h4><p>确保有效的开发设置的最后一步是运行一个简单的程序来练习 API。在 Python 文件中，复制并粘贴下面的代码并运行它。</p>
 <blockquote>
 <p><code>from agi.stk12.stkengine import STKEngine</code></p>
 <p><code>stk = STKEngine.StartApplication(noGraphics=True)</code></p>
@@ -424,6 +424,18 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">STK</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">OVS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Docker</a>
               </li>
             
             <div class="clearfix"></div>
