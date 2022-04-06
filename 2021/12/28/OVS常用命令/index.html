@@ -8,16 +8,17 @@
   <link rel="dns-prefetch" href="http://carlherman66.github.io">
   <title>OVS常用命令 | LK&#39;Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="#添加网桥： ovs-vsctl add-br br0    #列出所有网桥： ovs-vsctl list-br  #判断网桥是否存在： ovs-vsctl br-exists br0  #将物理网卡挂载到网桥上： ovs-vsctl add-port br0 eth0  #列出网桥中的所有端口： ovs-vsctl list-ports br  #列出所有挂载到网卡的网桥： ovs-vsctl">
+  <meta name="description" content="123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960#添加网桥：ovs-vsctl add-br br0  #列出所有网桥：ovs-vsctl list-br#判断网桥是否存在：ovs-vsctl br-exists br0#将物">
 <meta property="og:type" content="article">
 <meta property="og:title" content="OVS常用命令">
 <meta property="og:url" content="http://carlherman66.github.io/2021/12/28/OVS%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/index.html">
 <meta property="og:site_name" content="LK&#39;Blog">
-<meta property="og:description" content="#添加网桥： ovs-vsctl add-br br0    #列出所有网桥： ovs-vsctl list-br  #判断网桥是否存在： ovs-vsctl br-exists br0  #将物理网卡挂载到网桥上： ovs-vsctl add-port br0 eth0  #列出网桥中的所有端口： ovs-vsctl list-ports br  #列出所有挂载到网卡的网桥： ovs-vsctl">
+<meta property="og:description" content="123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960#添加网桥：ovs-vsctl add-br br0  #列出所有网桥：ovs-vsctl list-br#判断网桥是否存在：ovs-vsctl br-exists br0#将物">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2021-12-28T13:25:18.000Z">
-<meta property="article:modified_time" content="2021-12-28T13:28:43.994Z">
+<meta property="article:modified_time" content="2022-04-06T14:05:21.173Z">
 <meta property="article:author" content="luokui">
+<meta property="article:tag" content="ovs">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="LK&#39;Blog" type="application/atom+xml">
@@ -170,67 +171,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <pre><code>#添加网桥：
-ovs-vsctl add-br br0  
-
-#列出所有网桥：
-ovs-vsctl list-br
-
-#判断网桥是否存在：
-ovs-vsctl br-exists br0
-
-#将物理网卡挂载到网桥上：
-ovs-vsctl add-port br0 eth0
-
-#列出网桥中的所有端口：
-ovs-vsctl list-ports br
-
-#列出所有挂载到网卡的网桥：
-ovs-vsctl port-to-br eth0
-
-#查看ovs的网络状态：
-ovs-vsctl show
-
-#删除网桥上已经挂载的网口：
-ovs-vsctl del-port br0 eth0
-
-#删除网桥：
-ovs-vsctl del-br br0
-
-#设置控制器：
-ovs-vsctl set-controller br0 tcp:ip:6633
-
-#删除控制器：
-ovs-vsctl del-controller br0
-
-#设置支持OpenFlow Version 1.3：
-ovs-vsctl set bridge br0 protocols=OpenFlow13  
-
-#删除OpenFlow支持设置：
-ovs-vsctl clear bridge br0 protocols 
-
-#设置vlan标签：
-ovs-vsctl add-port br0 vlan3 tag=3 -- set interface vlan3 type=internal
-
-#删除vlan标签：
-ovs-vsctl del-port br0 vlan3 
-
-#查询 VLAN：
-ovs-vsctl show 
-ifconfig vlan3 
-
-#查看网桥上所有交换机端口的状态：
-ovs-ofctl dump-ports br0
-
-#查看网桥上所有的流规则：
-ovs-ofctl dump-flows br0
-
-#查看ovs版本：
-ovs-ofctl -V# 给端口配置tagovs-vsctl set port br-ex tag=101
-
-#给端口配置tag
-ovs-vsctl set port br-ex tag=101
-</code></pre>
+        <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">添加网桥：</span></span><br><span class="line">ovs-vsctl add-br br0  </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出所有网桥：</span></span><br><span class="line">ovs-vsctl list-br</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">判断网桥是否存在：</span></span><br><span class="line">ovs-vsctl br-exists br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">将物理网卡挂载到网桥上：</span></span><br><span class="line">ovs-vsctl add-port br0 eth0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出网桥中的所有端口：</span></span><br><span class="line">ovs-vsctl list-ports br</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出所有挂载到网卡的网桥：</span></span><br><span class="line">ovs-vsctl port-to-br eth0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看ovs的网络状态：</span></span><br><span class="line">ovs-vsctl show</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除网桥上已经挂载的网口：</span></span><br><span class="line">ovs-vsctl del-port br0 eth0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除网桥：</span></span><br><span class="line">ovs-vsctl del-br br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">设置控制器：</span></span><br><span class="line">ovs-vsctl set-controller br0 tcp:ip:6633</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除控制器：</span></span><br><span class="line">ovs-vsctl del-controller br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">设置支持OpenFlow Version 1.3：</span></span><br><span class="line">ovs-vsctl set bridge br0 protocols=OpenFlow13  </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除OpenFlow支持设置：</span></span><br><span class="line">ovs-vsctl clear bridge br0 protocols </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">设置vlan标签：</span></span><br><span class="line">ovs-vsctl add-port br0 vlan3 tag=3 -- set interface vlan3 type=internal</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除vlan标签：</span></span><br><span class="line">ovs-vsctl del-port br0 vlan3 </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查询 VLAN：</span></span><br><span class="line">ovs-vsctl show </span><br><span class="line">ifconfig vlan3 </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看网桥上所有交换机端口的状态：</span></span><br><span class="line">ovs-ofctl dump-ports br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看网桥上所有的流规则：</span></span><br><span class="line">ovs-ofctl dump-flows br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看ovs版本：</span></span><br><span class="line">ovs-ofctl -V# 给端口配置tagovs-vsctl set port br-ex tag=101</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">给端口配置tag</span></span><br><span class="line">ovs-vsctl set port br-ex tag=101</span><br></pre></td></tr></table></figure>
 
       
 
@@ -239,6 +180,17 @@ ovs-vsctl set port br-ex tag=101
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">ovs</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -440,10 +392,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">STK</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
               </li>
              
@@ -453,6 +401,14 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">Docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">ovs</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">STK</a>
               </li>
             
             <div class="clearfix"></div>
