@@ -16,8 +16,9 @@
 <meta property="og:description" content="最近在进行数据库并发读写时遇到问题，具体场景为一端对表进行循环删除、插入操作，另一端对表进行循环查询，结果两个操作冲突了，结果阻塞在那里。发现是因为MySQL执行select操作时没有加锁，只是进行了数据隔离，在进行select时手动加锁便解决了这个问题。  数据库并发场景：读-读：不存在任何问题，也不需要并发控制 读-写：有线程安全问题，可能会造成事务隔离性问题，可能遇到脏读，幻读，不可重复">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-12-22T02:35:57.000Z">
-<meta property="article:modified_time" content="2022-04-06T14:00:11.528Z">
+<meta property="article:modified_time" content="2022-04-07T09:13:12.055Z">
 <meta property="article:author" content="luokui">
+<meta property="article:tag" content="随笔">
 <meta property="article:tag" content="MySQL">
 <meta name="twitter:card" content="summary">
   
@@ -62,7 +63,7 @@
 			
 				<li><a href="/">主页</a></li>
 	        
-				<li><a href="/tags/OVS">随笔</a></li>
+				<li><a href="/tags/%E9%9A%8F%E7%AC%94">随笔</a></li>
 	        
 			</ul>
 		</nav>
@@ -136,7 +137,7 @@
 				
 					<li style="width: 50%"><a href="/">主页</a></li>
 		        
-					<li style="width: 50%"><a href="/tags/OVS">随笔</a></li>
+					<li style="width: 50%"><a href="/tags/%E9%9A%8F%E7%AC%94">随笔</a></li>
 		        
 				</ul>
 			</nav>
@@ -220,6 +221,10 @@
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
 			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        		</li>
+      		 
         		<li class="article-tag-list-item">
         			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
         		</li>
@@ -420,11 +425,19 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
           <ul class="article-tag-list" q-show="showTags">
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
+                <a href="javascript:void(0)" class="js-tag color3">随笔</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">OVS</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
               </li>
              
               <li class="article-tag-list-item">
@@ -433,10 +446,6 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color5">网络原理</a>
-              </li>
-             
-              <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color2">Docker</a>
               </li>
              
               <li class="article-tag-list-item">
