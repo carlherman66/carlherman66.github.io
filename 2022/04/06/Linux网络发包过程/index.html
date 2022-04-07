@@ -34,7 +34,7 @@
 <meta property="og:image" content="http://carlherman66.github.io/2022/04/06/Linux%E7%BD%91%E7%BB%9C%E5%8F%91%E5%8C%85%E8%BF%87%E7%A8%8B/17.png">
 <meta property="og:image" content="http://carlherman66.github.io/2022/04/06/Linux%E7%BD%91%E7%BB%9C%E5%8F%91%E5%8C%85%E8%BF%87%E7%A8%8B/18.png">
 <meta property="article:published_time" content="2022-04-06T08:48:11.298Z">
-<meta property="article:modified_time" content="2022-04-06T13:38:11.376Z">
+<meta property="article:modified_time" content="2022-04-07T01:42:44.852Z">
 <meta property="article:author" content="luokui">
 <meta property="article:tag" content="Linux">
 <meta property="article:tag" content="网络原理">
@@ -437,6 +437,19 @@
             </div>
         </div>
         
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81Linux%E7%BD%91%E7%BB%9C%E5%8F%91%E9%80%81%E8%BF%87%E7%A8%8B%E6%80%BB%E8%A7%88"><span class="toc-number">1.</span> <span class="toc-text">一、Linux网络发送过程总览</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E7%BD%91%E5%8D%A1%E5%90%AF%E5%8A%A8%E5%87%86%E5%A4%87"><span class="toc-number">2.</span> <span class="toc-text">二、网卡启动准备</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81%E5%8F%91%E9%80%81%E6%95%B0%E6%8D%AE%E5%BC%80%E5%A7%8B"><span class="toc-number">3.</span> <span class="toc-text">三、发送数据开始</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-send-%E7%B3%BB%E7%BB%9F%E8%B0%83%E7%94%A8%E5%AE%9E%E7%8E%B0"><span class="toc-number">3.0.1.</span> <span class="toc-text">3.1 send 系统调用实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E4%BC%A0%E8%BE%93%E5%B1%82%E5%A4%84%E7%90%86"><span class="toc-number">3.0.2.</span> <span class="toc-text">3.2 传输层处理</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#1%EF%BC%89%E4%BC%A0%E8%BE%93%E5%B1%82%E6%8B%B7%E8%B4%9D"><span class="toc-number">3.0.2.1.</span> <span class="toc-text">1）传输层拷贝</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#2%EF%BC%89%E4%BC%A0%E8%BE%93%E5%B1%82%E5%8F%91%E9%80%81"><span class="toc-number">3.0.2.2.</span> <span class="toc-text">2）传输层发送</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E7%BD%91%E7%BB%9C%E5%B1%82%E5%8F%91%E9%80%81%E5%A4%84%E7%90%86"><span class="toc-number">3.0.3.</span> <span class="toc-text">3.3 网络层发送处理</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E9%82%BB%E5%B1%85%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.0.4.</span> <span class="toc-text">3.4 邻居子系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-5-%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="toc-number">3.0.5.</span> <span class="toc-text">3.5 网络设备子系统</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E8%AE%BE%E5%A4%87%E5%AD%90%E7%B3%BB%E7%BB%9F%E7%BB%93%E6%9E%84"><span class="toc-number">3.0.5.0.1.</span> <span class="toc-text">网络设备子系统结构</span></a></li></ol></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-%E8%BD%AF%E4%B8%AD%E6%96%AD%E8%B0%83%E5%BA%A6"><span class="toc-number">3.0.6.</span> <span class="toc-text">3.6 软中断调度</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-7-igb-%E7%BD%91%E5%8D%A1%E9%A9%B1%E5%8A%A8%E5%8F%91%E9%80%81"><span class="toc-number">3.0.7.</span> <span class="toc-text">3.7 igb 网卡驱动发送</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-8-%E5%8F%91%E9%80%81%E5%AE%8C%E6%88%90%E7%A1%AC%E4%B8%AD%E6%96%AD"><span class="toc-number">3.0.8.</span> <span class="toc-text">3.8 发送完成硬中断</span></a></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">4.</span> <span class="toc-text">四、总结</span></a></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
         
     </div>
 </aside>
