@@ -17,7 +17,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://carlherman66.github.io/2022/04/09/Linux%E7%BD%91%E7%BB%9C%E6%94%B6%E5%8C%85%E8%BF%87%E7%A8%8B/1.png">
 <meta property="article:published_time" content="2022-04-09T11:01:08.832Z">
-<meta property="article:modified_time" content="2022-04-09T12:56:25.647Z">
+<meta property="article:modified_time" content="2022-04-09T14:31:26.403Z">
 <meta property="article:author" content="luokui">
 <meta property="article:tag" content="随笔">
 <meta property="article:tag" content="Linux">
@@ -189,12 +189,14 @@
 </ul>
 <ol start="2">
 <li>网卡从网络上收到一个包，将包放到 ring-buffer。</li>
-<li> 如果此时 NAPI 没有在执行，网卡就会触发一个硬件中断，告诉处理器 DMA 区域中有包等待处理。</li>
+<li>如果此时 NAPI 没有在执行，网卡就会触发一个硬件中断，告诉处理器 DMA 区域中有包等待处理。</li>
 <li>收到硬中断信号后，处理器开始执行 NAPI。</li>
 <li>NAPI 执行网卡注册的poll 方法开始收包。</li>
 <li>帧从ring-buffer上被摘下来保存为一个skb。</li>
 <li>协议栈开始处理网络帧，处理完放到socket的接收队列。</li>
 </ol>
+<span id="more"></span>
+
 <h1 id="二、Linux启动"><a href="#二、Linux启动" class="headerlink" title="二、Linux启动"></a>二、Linux启动</h1><p>​        Linux驱动，内核协议栈等等模块在具备接收网卡数据包之前，要做很多的准备工作才行。比如要提前创建好ksoftirqd内核线程，要注册好各个协议对应的处理函数，网络设备子系统要提前初始化好，网卡要启动好。只有这些都Ready之后，才能真正开始接收数据包。</p>
 <h2 id="2-1-创建ksoftirqd内核线程"><a href="#2-1-创建ksoftirqd内核线程" class="headerlink" title="2.1 创建ksoftirqd内核线程"></a>2.1 创建ksoftirqd内核线程</h2><p>​        Linux的软中断都是在专门的内核线程（ksoftirqd）中进行的，该进程数量等于CPU核数。</p>
 <p>​        当ksoftirqd被创建出来以后，它就会进入自己的线程循环函数ksoftirqd_should_run和run_ksoftirqd。不停地判断有没有软中断需要被处理。软中断不仅仅只有网络软中断，还有其它类型。</p>
@@ -532,15 +534,15 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
-              </li>
-             
-              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">OVS</a>
               </li>
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color2">Docker</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
               </li>
              
               <li class="article-tag-list-item">
