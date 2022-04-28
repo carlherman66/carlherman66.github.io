@@ -148,6 +148,418 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-Quagga(Zebra)源码调试过程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/04/28/Quagga(Zebra)%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95%E8%BF%87%E7%A8%8B/">Quagga(Zebra)源码调试过程</a>
+    </h1>
+  
+
+        
+        <a href="/2022/04/28/Quagga(Zebra)%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95%E8%BF%87%E7%A8%8B/" class="archive-article-date">
+  	<time datetime="2022-04-28T08:53:11.381Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-28</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>​        Quagga是一个开源的、基 于Zebra的、实现了RIP, OSPF, BGP的动态路由软件。它提供的CL命令和Cisco IOS类似，可以使用quagga将linux机器打造成一台功能完备的路由器。</p>
+<p>​        最近由于项目需要计算路由协议收敛时间，因此不得不看Quagga源码实现，但苦于不知道开发者是如何使用日志对代码进行调试的，所以更改代码、编译后也不知道怎么查看结果。好在看到另外一篇博客，介绍了如何对Quagga进行调试，为了今后需要的时候有个参考，因此对该调试方法进行记录。</p>
+<hr>
+<p>​        Quagga提供了一个类Cisco命令行的分级多用户命令解析引擎–VTY(Virtual Terminal)。它是类似于Linux Shell的虚拟终端接口，负责对访问的安全验证、数据缓冲、命令解析、模式切换和命令调用。</p>
+<p>​        为了方便查看日志信息，需要先建立一个日志文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">root@n1:/tmp/pycore.33729/n1.conf# cd /var/log</span><br><span class="line">root@n1:/var/log# touch quagga.log</span><br></pre></td></tr></table></figure>
+
+<p>​        然后启动vtysh命令行</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">root@n1:/var/log# vtysh</span><br><span class="line"></span><br><span class="line">Hello, this is Quagga (version 0.99.21mr2.2).</span><br><span class="line">Copyright 1996-2005 Kunihiro Ishiguro, et al.</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">n1#</span></span><br></pre></td></tr></table></figure>
+
+<p>​        为Quagga配置日志文件</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">n1#</span><span class="bash"> configure terminal        //进入vtysh全局配置模式</span></span><br><span class="line"><span class="meta">n1(config)#</span><span class="bash"> <span class="built_in">log</span> file /var/<span class="built_in">log</span>/quagga.log       //指定日志文件位置</span></span><br><span class="line"><span class="meta">n1(config)#</span><span class="bash"> <span class="built_in">exit</span></span></span><br><span class="line"><span class="meta">n1#</span><span class="bash"> write					  //保存配置</span></span><br><span class="line">Building Configuration...</span><br><span class="line">Integrated configuration saved to /usr/local/etc/quagga/Quagga.conf</span><br><span class="line">[OK]</span><br><span class="line"><span class="meta">n1#</span><span class="bash"> </span></span><br></pre></td></tr></table></figure>
+
+<p>​        打开需要调试的接口</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">n1#</span><span class="bash"> debug ospf event</span> </span><br><span class="line"><span class="meta">n1#</span><span class="bash"> debug ospf packet ls-update</span> </span><br><span class="line"><span class="meta">n1#</span><span class="bash"> show debugging</span> </span><br><span class="line">bgp    ospf   rip    ripng  zebra  </span><br><span class="line"><span class="meta">n1#</span><span class="bash"> show debugging ospf</span></span><br><span class="line">OSPF debugging status:</span><br><span class="line">  OSPF event debugging is on</span><br><span class="line">  OSPF packet Link State Update debugging is on</span><br><span class="line"><span class="meta">n1#</span><span class="bash"> </span></span><br></pre></td></tr></table></figure>
+
+<p>​        查看日志信息</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">root@n1:/var/log# cat quagga.log </span><br></pre></td></tr></table></figure>
+
+<p>​        以下是vtysh的一些命令</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>解释</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>clear</td>
+<td>Reset functions</td>
+</tr>
+<tr>
+<td>configure</td>
+<td>Configuration from vty interface</td>
+</tr>
+<tr>
+<td>copy</td>
+<td>Copy from one file to another</td>
+</tr>
+<tr>
+<td>debug</td>
+<td>Enable debug messages for specific or all part.</td>
+</tr>
+<tr>
+<td>disable</td>
+<td>Turn off privileged mode command</td>
+</tr>
+<tr>
+<td>end</td>
+<td>End current mode and change to enable mode</td>
+</tr>
+<tr>
+<td>exit</td>
+<td>Exit current mode and down to previous mode</td>
+</tr>
+<tr>
+<td>list</td>
+<td>Print command list</td>
+</tr>
+<tr>
+<td>no</td>
+<td>Negate a command or set its defaults</td>
+</tr>
+<tr>
+<td>ping</td>
+<td>Send echo messages</td>
+</tr>
+<tr>
+<td>quit</td>
+<td>Exit current mode and down to previous mode</td>
+</tr>
+<tr>
+<td>show</td>
+<td>Show running system information</td>
+</tr>
+<tr>
+<td>ssh</td>
+<td>Open an ssh connection</td>
+</tr>
+<tr>
+<td>start-shell</td>
+<td>Start UNIX shell</td>
+</tr>
+<tr>
+<td>telnet</td>
+<td>Open a telnet connection</td>
+</tr>
+<tr>
+<td>terminal</td>
+<td>Set terminal line parameters</td>
+</tr>
+<tr>
+<td>traceroute</td>
+<td>Trace route to destination</td>
+</tr>
+<tr>
+<td>undebug</td>
+<td>Disable debugging functions (see also ‘debug’)</td>
+</tr>
+<tr>
+<td>write</td>
+<td>Write running configuration to memory, network, or terminal</td>
+</tr>
+<tr>
+<td>babel</td>
+<td>IP information</td>
+</tr>
+<tr>
+<td>bgp</td>
+<td>BGP information</td>
+</tr>
+<tr>
+<td>daemons</td>
+<td>Show list of running daemons</td>
+</tr>
+<tr>
+<td>debugging</td>
+<td>State of each debugging option</td>
+</tr>
+<tr>
+<td>interface</td>
+<td>Interface status and configuration</td>
+</tr>
+<tr>
+<td>ip</td>
+<td>IP information</td>
+</tr>
+<tr>
+<td>ipv6</td>
+<td>IPv6 information</td>
+</tr>
+<tr>
+<td>isis</td>
+<td>IS-IS information</td>
+</tr>
+<tr>
+<td>logging</td>
+<td>Show current logging configuration</td>
+</tr>
+<tr>
+<td>memory</td>
+<td>Memory statistics</td>
+</tr>
+<tr>
+<td>mpls-te</td>
+<td>MPLS-TE information</td>
+</tr>
+<tr>
+<td>route-map</td>
+<td>route-map information</td>
+</tr>
+<tr>
+<td>running-config</td>
+<td>Current operating configuration</td>
+</tr>
+<tr>
+<td>startup-config</td>
+<td>Contentes of startup configuration</td>
+</tr>
+<tr>
+<td>table</td>
+<td>default routing table to use for all clients</td>
+</tr>
+<tr>
+<td>version</td>
+<td>Displays zebra version</td>
+</tr>
+<tr>
+<td>zebra</td>
+<td>Zebra information</td>
+</tr>
+<tr>
+<td>access-list</td>
+<td>Add an access list entry</td>
+</tr>
+<tr>
+<td>bgp</td>
+<td>BGP information</td>
+</tr>
+<tr>
+<td>debug</td>
+<td>Enable debug messages for specific or all part.</td>
+</tr>
+<tr>
+<td>dump</td>
+<td>Dump packet</td>
+</tr>
+<tr>
+<td>enable</td>
+<td>Modify enable password parameters</td>
+</tr>
+<tr>
+<td>end</td>
+<td>End current mode and change to enable mode</td>
+</tr>
+<tr>
+<td>exit</td>
+<td>Exit current mode and down to previous mode</td>
+</tr>
+<tr>
+<td>hostname</td>
+<td>Set system’s network name</td>
+</tr>
+<tr>
+<td>interface</td>
+<td>Select an interface to configure</td>
+</tr>
+<tr>
+<td>ip</td>
+<td>IP information</td>
+</tr>
+<tr>
+<td>ipv6</td>
+<td>IPv6 information</td>
+</tr>
+<tr>
+<td>key</td>
+<td>Authentication key management</td>
+</tr>
+<tr>
+<td>line</td>
+<td>Configure a terminal line</td>
+</tr>
+<tr>
+<td>list</td>
+<td>Print command list</td>
+</tr>
+<tr>
+<td>log</td>
+<td>Logging control</td>
+</tr>
+<tr>
+<td>no</td>
+<td>Negate a command or set its defaults</td>
+</tr>
+<tr>
+<td>password</td>
+<td>Assign the terminal connection password</td>
+</tr>
+<tr>
+<td>route-map</td>
+<td>Create route-map or enter route-map command mode</td>
+</tr>
+<tr>
+<td>router</td>
+<td>Enable a routing process</td>
+</tr>
+<tr>
+<td>router-id</td>
+<td>Manually set the router-id</td>
+</tr>
+<tr>
+<td>service</td>
+<td>Set up miscellaneous service</td>
+</tr>
+<tr>
+<td>table</td>
+<td>Configure target kernel routing table</td>
+</tr>
+</tbody></table>
+<p>参考：<a target="_blank" rel="noopener" href="https://blog.starryvoid.com/archives/215.html">https://blog.starryvoid.com/archives/215.html</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Quagga软路由</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/04/28/Quagga(Zebra)%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95%E8%BF%87%E7%A8%8B/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-内核编译" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="内核编译流程"><a href="#内核编译流程" class="headerlink" title="内核编译流程"></a>内核编译流程</h2><p>Ubuntu版本：18.04</p>
+<p>Kernel版本：5.4.1</p>
+<h4 id="1-在www-kernel-org上选择要下载的内核版本"><a href="#1-在www-kernel-org上选择要下载的内核版本" class="headerlink" title="1.在www.kernel.org上选择要下载的内核版本"></a>1.在<a target="_blank" rel="noopener" href="http://www.kernel.org上选择要下载的内核版本/">www.kernel.org上选择要下载的内核版本</a></h4><p>下载指定版本Kernel：<a target="_blank" rel="noopener" href="https://mirrors.edge.kernel.org/pub/linux/kernel/%EF%BC%8C%E6%88%91%E8%BF%99%E9%87%8C%E9%80%89%E6%8B%A9%E4%BA%86%E5%92%8C%E7%9B%AE%E5%89%8D%E4%BD%BF%E7%94%A8%E7%9A%84%E5%86%85%E6%A0%B8%E7%89%88%E6%9C%AC%E6%9C%80%E6%8E%A5%E8%BF%91%E7%9A%84%E4%B8%80%E7%89%88%EF%BC%9A5.4.1%E3%80%82">https://mirrors.edge.kernel.org/pub/linux/kernel/，我这里选择了和目前使用的内核版本最接近的一版：5.4.1。</a></p>
+<h4 id="2-解压"><a href="#2-解压" class="headerlink" title="2.解压"></a>2.解压</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mv linux-5.4.1.tar.xz ~/mydir</span><br><span class="line">cd ~/mydir</span><br><span class="line">sudo tar -xvf linux-5.4.1.tar.xz</span><br></pre></td></tr></table></figure>
+
+<h4 id="3-安装依赖库"><a href="#3-安装依赖库" class="headerlink" title="3.安装依赖库"></a>3.安装依赖库</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install libncurses5-dev #用于menuconfig</span><br><span class="line">sudo apt-get install build-essential openssl</span><br><span class="line">sudo apt-get intall flex</span><br><span class="line">sudo apt-get intall bison</span><br><span class="line">sudo apt-get intall openssl</span><br><span class="line">sudo apt-get intall libssl-dev</span><br></pre></td></tr></table></figure>
+
+<h4 id="4-配置内核编译参数"><a href="#4-配置内核编译参数" class="headerlink" title="4.配置内核编译参数"></a>4.配置内核编译参数</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd ~/mydir/linux-5.4.1</span><br><span class="line">sudo make mrproper</span><br><span class="line">sudo make clean</span><br><span class="line">sudo make menuconfig</span><br></pre></td></tr></table></figure>
+
+<p>会出现如下配置界面，直接Save-Load-Exit即可，会默认使用当前内核的参数配置。</p>
+<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/Users\hp\AppData\Roaming\Typora\typora-user-images\image-20220425190921320.png" alt="image-20220425190921320"></p>
+<h4 id="5-编译内核"><a href="#5-编译内核" class="headerlink" title="5.编译内核"></a>5.编译内核</h4><p><code>sudo make bzImage</code></p>
+<p>出现以下问题：</p>
+<blockquote>
+<p>make[1]: 没有规则可制作目标“debian/canonical-certs.pem”，由“certs/x509_certificate_list” 需求。 停止。</p>
+<p>Makefile:1652: recipe for target ‘certs’ failed</p>
+<p>make: [certs] Error 2</p>
+</blockquote>
+<p>解决方法：将.config文件中的<code>“CONFIG_SYSTEM_TRUSTED_KEYS”</code>置空</p>
+<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/Users\hp\AppData\Roaming\Typora\typora-user-images\image-20220425163222523.png" alt="image-20220425163222523"></p>
+<p>编译过程中：</p>
+<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/Users\hp\AppData\Roaming\Typora\typora-user-images\image-20220425171559566.png" alt="image-20220425171559566"></p>
+<p>编译完成：</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Linux网络收包过程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -360,7 +772,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">添加网桥：</span></span><br><span class="line">ovs-vsctl add-br br0  </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出所有网桥：</span></span><br><span class="line">ovs-vsctl list-br</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">判断网桥是否存在：</span></span><br><span class="line">ovs-vsctl br-exists br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">将物理网卡挂载到网桥上：</span></span><br><span class="line">ovs-vsctl add-port br0 eth0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出网桥中的所有端口：</span></span><br><span class="line">ovs-vsctl list-ports br</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出所有挂载到网卡的网桥：</span></span><br><span class="line">ovs-vsctl port-to-br eth0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看ovs的网络状态：</span></span><br><span class="line">ovs-vsctl show</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除网桥上已经挂载的网口：</span></span><br><span class="line">ovs-vsctl del-port br0 eth0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除网桥：</span></span><br><span class="line">ovs-vsctl del-br br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">设置控制器：</span></span><br><span class="line">ovs-vsctl set-controller br0 tcp:ip:6633</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除控制器：</span></span><br><span class="line">ovs-vsctl del-controller br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">设置支持OpenFlow Version 1.3：</span></span><br><span class="line">ovs-vsctl set bridge br0 protocols=OpenFlow13  </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除OpenFlow支持设置：</span></span><br><span class="line">ovs-vsctl clear bridge br0 protocols </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">设置vlan标签：</span></span><br><span class="line">ovs-vsctl add-port br0 vlan3 tag=3 -- set interface vlan3 type=internal</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除vlan标签：</span></span><br><span class="line">ovs-vsctl del-port br0 vlan3 </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查询 VLAN：</span></span><br><span class="line">ovs-vsctl show </span><br><span class="line">ifconfig vlan3 </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看网桥上所有交换机端口的状态：</span></span><br><span class="line">ovs-ofctl dump-ports br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看网桥上所有的流规则：</span></span><br><span class="line">ovs-ofctl dump-flows br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看ovs版本：</span></span><br><span class="line">ovs-ofctl -V# 给端口配置tagovs-vsctl set port br-ex tag=101</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">给端口配置tag</span></span><br><span class="line">ovs-vsctl set port br-ex tag=101</span><br></pre></td></tr></table></figure>
+        <figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">添加网桥：</span></span><br><span class="line">ovs-vsctl add-br br0  </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出所有网桥：</span></span><br><span class="line">ovs-vsctl list-br</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">判断网桥是否存在：</span></span><br><span class="line">ovs-vsctl br-exists br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">将物理网卡挂载到网桥上：</span></span><br><span class="line">ovs-vsctl add-port br0 eth0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出网桥中的所有端口：</span></span><br><span class="line">ovs-vsctl list-ports br</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">列出所有挂载到网卡的网桥：</span></span><br><span class="line">ovs-vsctl port-to-br eth0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看ovs的网络状态：</span></span><br><span class="line">ovs-vsctl show</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除网桥上已经挂载的网口：</span></span><br><span class="line">ovs-vsctl del-port br0 eth0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除网桥：</span></span><br><span class="line">ovs-vsctl del-br br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">设置控制器：</span></span><br><span class="line">ovs-vsctl set-controller br0 tcp:ip:6633</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除控制器：</span></span><br><span class="line">ovs-vsctl del-controller br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">设置支持OpenFlow Version 1.3：</span></span><br><span class="line">ovs-vsctl set bridge br0 protocols=OpenFlow13  </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除OpenFlow支持设置：</span></span><br><span class="line">ovs-vsctl clear bridge br0 protocols </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">设置vlan标签：</span></span><br><span class="line">ovs-vsctl add-port br0 vlan3 tag=3 -- set interface vlan3 type=internal</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">删除vlan标签：</span></span><br><span class="line">ovs-vsctl del-port br0 vlan3 </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查询 VLAN：</span></span><br><span class="line">ovs-vsctl show </span><br><span class="line">ifconfig vlan3 </span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看网桥上所有交换机端口的状态：</span></span><br><span class="line">ovs-ofctl dump-ports br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看网桥上所有的流规则：</span></span><br><span class="line">ovs-ofctl dump-flows br0</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">查看ovs版本：</span></span><br><span class="line">ovs-ofctl -V</span><br><span class="line"><span class="meta"></span></span><br><span class="line"><span class="meta">#</span><span class="bash">给端口配置tag</span></span><br><span class="line">ovs-vsctl set port br-ex tag=101</span><br></pre></td></tr></table></figure>
 
       
 
@@ -971,90 +1383,10 @@
 
 
   
-    <article id="post-STK编程接口" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/11/08/STK%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3/">STK编程接口</a>
-    </h1>
-  
-
-        
-        <a href="/2021/11/08/STK%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3/" class="archive-article-date">
-  	<time datetime="2021-11-08T09:02:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-11-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>​        STK编程接口提供了各种各样的选项来自动化和定制STK，并将其技术集成到其他应用程序中。其他选项允许您使用插件扩展STK，通过COM和脚本接口从外部扩展到STK，并开发自定义应用程序。选择正确的技术:选择可用于自动化STK、将STK与其他应用程序一起使用、扩展STK和STK引擎、开发定制应用程序和处理实时数据的技术的指南。</p>
-<h3 id="使用STK编程接口可实现以下功能："><a href="#使用STK编程接口可实现以下功能：" class="headerlink" title="使用STK编程接口可实现以下功能："></a>使用STK编程接口可实现以下功能：</h3><h4 id="自动化重复任务"><a href="#自动化重复任务" class="headerlink" title="自动化重复任务"></a>自动化重复任务</h4><p>使用脚本和编译语言、TCP/IP 套接字、自定义 UI 和外部产品（例如 MATLAB）的 OLE 自动化来自动化 STK 和使用 STK 引擎构建的自定义应用程序。</p>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h4 id="集成其他应用程序"><a href="#集成其他应用程序" class="headerlink" title="集成其他应用程序"></a>集成其他应用程序</h4><p>轻松地将高级 STK 2D、3D 可视化（2D 地图控件和 3D 地球控件）和分析功能（STK 应用程序对象和图形分析控件）添加到自定义应用程序中。</p>
-<h4 id="扩展AGI产品"><a href="#扩展AGI产品" class="headerlink" title="扩展AGI产品"></a>扩展AGI产品</h4><p>使用插件和自定义用户界面(UI)扩展STK GUI和STK分析引擎。</p>
-<h4 id="开发自定义应用程序"><a href="#开发自定义应用程序" class="headerlink" title="开发自定义应用程序"></a>开发自定义应用程序</h4><p>快速构建和部署自定义软件应用程序，嵌入AGI的主要地球动力学分析和可视化引擎。</p>
-<h4 id="处理实时数据"><a href="#处理实时数据" class="headerlink" title="处理实时数据"></a>处理实时数据</h4><p>构建自定义数据馈送接口，专门的数据处理，和预先配置的显示设置。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">STK</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/11/08/STK%E7%BC%96%E7%A8%8B%E6%8E%A5%E5%8F%A3/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
+    <nav id="page-nav">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
+    </nav>
   
 
 
@@ -1152,6 +1484,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">OVS</a>
               </li>
              
@@ -1160,7 +1496,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
+                <a href="javascript:void(0)" class="js-tag color5">Quagga软路由</a>
               </li>
              
               <li class="article-tag-list-item">

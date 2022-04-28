@@ -17,7 +17,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://carlherman66.github.io/2022/04/09/Linux%E7%BD%91%E7%BB%9C%E6%94%B6%E5%8C%85%E8%BF%87%E7%A8%8B/1.png">
 <meta property="article:published_time" content="2022-04-09T11:01:08.832Z">
-<meta property="article:modified_time" content="2022-04-09T14:31:26.403Z">
+<meta property="article:modified_time" content="2022-04-18T12:11:07.070Z">
 <meta property="article:author" content="luokui">
 <meta property="article:tag" content="随笔">
 <meta property="article:tag" content="Linux">
@@ -295,7 +295,7 @@
 <li>内核线程ksoftirqd线程发现有软中断请求到来，先关闭硬中断</li>
 <li>ksoftirqd线程开始调用驱动的poll函数收包</li>
 <li>poll函数将收到的包送到协议栈注册的ip_rcv函数中</li>
-<li>ip_rcv函数再讲包送到udp_rcv函数中（对于tcp包就送到tcp_rcv）</li>
+<li>ip_rcv函数再将包送到udp_rcv函数中（对于tcp包就送到tcp_rcv）</li>
 </ol>
 <p>​        Linux收一个包的CPU开销：首先第一块是用户进程调用系统调用陷入内核态的开销。第二块是CPU响应包的硬中断的CPU开销。第三块是ksoftirqd内核线程的软中断上下文花费的。</p>
 
@@ -388,6 +388,15 @@
 
   
 <nav id="article-nav">
+  
+    <a href="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/" id="article-nav-newer" class="article-nav-link-wrap">
+      <i class="icon-circle-left"></i>
+      <div class="article-nav-title">
+        
+          (no title)
+        
+      </div>
+    </a>
   
   
     <a href="/2022/04/06/Linux%E7%BD%91%E7%BB%9C%E5%8F%91%E5%8C%85%E8%BF%87%E7%A8%8B/" id="article-nav-older" class="article-nav-link-wrap">
@@ -534,6 +543,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
+              </li>
+             
+              <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">OVS</a>
               </li>
              
@@ -542,7 +555,7 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color1">MySQL</a>
+                <a href="javascript:void(0)" class="js-tag color5">Quagga软路由</a>
               </li>
              
               <li class="article-tag-list-item">
