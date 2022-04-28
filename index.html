@@ -495,7 +495,17 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="内核编译流程"><a href="#内核编译流程" class="headerlink" title="内核编译流程"></a>内核编译流程</h2><p>Ubuntu版本：18.04</p>
+        <p>toc: true</p>
+<p>title: 内核编译学习</p>
+<p>author: luokui</p>
+<p>date: 2022-4-25 21:25:18</p>
+<p>tags:</p>
+<ul>
+<li>随笔</li>
+<li>Linux</li>
+<li>Kernel</li>
+</ul>
+<h2 id="内核编译流程"><a href="#内核编译流程" class="headerlink" title="内核编译流程"></a>内核编译流程</h2><p>Ubuntu版本：18.04</p>
 <p>Kernel版本：5.4.1</p>
 <h4 id="1-在www-kernel-org上选择要下载的内核版本"><a href="#1-在www-kernel-org上选择要下载的内核版本" class="headerlink" title="1.在www.kernel.org上选择要下载的内核版本"></a>1.在<a target="_blank" rel="noopener" href="http://www.kernel.org上选择要下载的内核版本/">www.kernel.org上选择要下载的内核版本</a></h4><p>下载指定版本Kernel：<a target="_blank" rel="noopener" href="https://mirrors.edge.kernel.org/pub/linux/kernel/%EF%BC%8C%E6%88%91%E8%BF%99%E9%87%8C%E9%80%89%E6%8B%A9%E4%BA%86%E5%92%8C%E7%9B%AE%E5%89%8D%E4%BD%BF%E7%94%A8%E7%9A%84%E5%86%85%E6%A0%B8%E7%89%88%E6%9C%AC%E6%9C%80%E6%8E%A5%E8%BF%91%E7%9A%84%E4%B8%80%E7%89%88%EF%BC%9A5.4.1%E3%80%82">https://mirrors.edge.kernel.org/pub/linux/kernel/，我这里选择了和目前使用的内核版本最接近的一版：5.4.1。</a></p>
 <h4 id="2-解压"><a href="#2-解压" class="headerlink" title="2.解压"></a>2.解压</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mv linux-5.4.1.tar.xz ~/mydir</span><br><span class="line">cd ~/mydir</span><br><span class="line">sudo tar -xvf linux-5.4.1.tar.xz</span><br></pre></td></tr></table></figure>
@@ -505,7 +515,7 @@
 <h4 id="4-配置内核编译参数"><a href="#4-配置内核编译参数" class="headerlink" title="4.配置内核编译参数"></a>4.配置内核编译参数</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cd ~/mydir/linux-5.4.1</span><br><span class="line">sudo make mrproper</span><br><span class="line">sudo make clean</span><br><span class="line">sudo make menuconfig</span><br></pre></td></tr></table></figure>
 
 <p>会出现如下配置界面，直接Save-Load-Exit即可，会默认使用当前内核的参数配置。</p>
-<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/Users\hp\AppData\Roaming\Typora\typora-user-images\image-20220425190921320.png" alt="image-20220425190921320"></p>
+<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/1.png" alt="image-20220425190921320"></p>
 <h4 id="5-编译内核"><a href="#5-编译内核" class="headerlink" title="5.编译内核"></a>5.编译内核</h4><p><code>sudo make bzImage</code></p>
 <p>出现以下问题：</p>
 <blockquote>
@@ -514,9 +524,9 @@
 <p>make: [certs] Error 2</p>
 </blockquote>
 <p>解决方法：将.config文件中的<code>“CONFIG_SYSTEM_TRUSTED_KEYS”</code>置空</p>
-<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/Users\hp\AppData\Roaming\Typora\typora-user-images\image-20220425163222523.png" alt="image-20220425163222523"></p>
+<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/2.png" alt="image-20220425163222523"></p>
 <p>编译过程中：</p>
-<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/Users\hp\AppData\Roaming\Typora\typora-user-images\image-20220425171559566.png" alt="image-20220425171559566"></p>
+<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/3.png" alt="image-20220425171559566"></p>
 <p>编译完成：</p>
 
       
