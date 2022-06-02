@@ -1,0 +1,81 @@
+<h2 id="VSCode远程修改及编译过程"><a href="#VSCode远程修改及编译过程" class="headerlink" title="VSCode远程修改及编译过程"></a>VSCode远程修改及编译过程</h2><p>VSCode版本号：1.67.2</p>
+<p>Linux内核版本：5.4.1</p>
+<h4 id="安装SSH插件"><a href="#安装SSH插件" class="headerlink" title="安装SSH插件"></a>安装SSH插件</h4><p>SSH插件版本号：v0.80.0</p>
+<p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image002.jpg" alt="img"></p>
+<h4 id="配置远程服务器信息"><a href="#配置远程服务器信息" class="headerlink" title="配置远程服务器信息"></a>配置远程服务器信息</h4><p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image004.jpg" alt="img"></p>
+<p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image006.jpg" alt="img"></p>
+<h4 id="连接到服务器后，打开下图所示文件夹"><a href="#连接到服务器后，打开下图所示文件夹" class="headerlink" title="连接到服务器后，打开下图所示文件夹"></a>连接到服务器后，打开下图所示文件夹</h4><p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image008.jpg" alt="img"></p>
+<h4 id="更改ospf-mdr-myospf-ospf-spf-c文件中的ospf-spf-next函数"><a href="#更改ospf-mdr-myospf-ospf-spf-c文件中的ospf-spf-next函数" class="headerlink" title="更改ospf-mdr/myospf/ospf_spf.c文件中的ospf_spf_next函数"></a>更改ospf-mdr/myospf/ospf_spf.c文件中的ospf_spf_next函数</h4><p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image010.jpg" alt="img"></p>
+<p><code>ospf_spf_next (struct vertex *v, struct ospf_area *area, struct pqueue * candidate)</code><strong>函数说明</strong>：</p>
+<ul>
+<li><p>该函数的作用是让每个路由器以自己为树根构建最短路径树</p>
+</li>
+<li><p>参数 v：新加入最短路径树的节点。</p>
+</li>
+<li><p>参数 area：需要计算最短路径树的区域。</p>
+</li>
+<li><p>参数 candidate：候选列表，即存放除根节点以外的其他节点，从候选列表中选择节点，然后将这些节点加入最短路径树</p>
+</li>
+</ul>
+<p>以下是OSPF最短路径树算法细节：</p>
+<p>(1)  将新加入树的节点称为节点V。查看与节点 V 关联的 LSA（函数中的<strong>while循环</strong>）。这是在区域area的连接状态数据库中基于节点标识的查找。如果是一个 Router-LSA，且Router-LSA 中设置了V 位，将区域 A 的 TransitCapability 设为TRUE:</p>
+<pre><code class="c">if (v-&gt;type == OSPF_VERTEX_ROUTER)
+{
+      if (IS_ROUTER_LSA_VIRTUAL ((struct router_lsa *) v-&gt;lsa))
+           area-&gt;transit = OSPF_TRANSIT_TRUE;
+}
+</code></pre>
+<p>在任何情况下， LSA 描述的每个连接都给出了到达邻接节点的距离值。对于所描述的每个连接 W（称为将节点 W 加入节点 V）：</p>
+<ol>
+<li><p>如果连接为stub网络 ，检查节点 V 的 LSA 中下一个连接。到stub网络的连接在最短路径计算的第二步中考虑。</p>
+</li>
+<li><p> 否则，节点 W 为传输节点（ 路由器或传输网络 ），在区域 A 的连接状态数据库中查找节点 W 的 LSA（ Router-LSA 或 Network-LSA ）。如果不存在该 LSA ，或 LSA时限等于 MaxAge ， 或不存在指回节点 V 的连接 ，检查 LSA 中下一个连接 。<strong>（这部分不需要改）</strong></p>
+</li>
+<li><p>如果节点 W 已经在最短路径树上， 检查 LSA 中下一个连接 。</p>
+<pre><code class="c">if (w_lsa-&gt;stat == LSA_SPF_IN_SPFTREE)
+{
+    continue;
+}
+</code></pre>
+<p>以下是计算最短路径树<strong>关键代码</strong>：</p>
+</li>
+<li><p>计算从树根到节点 W 路径的连接状态距离值 distance。distance 是到达节点 V 最短路径的连接状态距离值（已经计算过），加上 节点 V、 W 之间的连接所宣告距离值。</p>
+<pre><code class="c">if (v-&gt;lsa-&gt;type == OSPF_ROUTER_LSA)
+    distance = v-&gt;distance + ntohs (l-&gt;m[0].metric);
+else /* v is not a Router-LSA */
+    distance = v-&gt;distance;
+</code></pre>
+<p>如果 distance： 大于候选列表中节点 W 已经有的值 ，检查下一个连接 ：</p>
+<pre><code class="c">if (w-&gt;distance &lt; distance)
+{
+    continue;
+}
+</code></pre>
+<p>如果 distance： 等于候选列表中节点 W 已经有的值，使用所宣告的连接计算下一跳：</p>
+<pre><code class="c">else if (w-&gt;distance == distance)
+{
+    /* Found an equal-cost path to W.  
+    * Calculate nexthop of to W from V. */
+    ospf_nexthop_calculation (area, v, w, l, distance);
+}
+</code></pre>
+<p>计算的输入为目标（W）及其父节点（ V ），即<code>ospf_nexthop_calculation</code>函数。计算的结果应当加入候选列表中节点 W 的下一跳值。 </p>
+<p>如果 distance： 小于候选列表中节点 W 已经有的值，或 者 W 不在候选列表中，将 W 加入 候选列表，并说明到达树根的距离为distance。同样使用所宣告的连接计算下一跳， 并以此设定 W 的下一跳值：</p>
+<pre><code class="c">else
+{
+    /* Found a lower-cost path to W.
+    * nexthop_calculation is conditional, if it finds
+    * valid nexthop it will call spf_add_parents, which
+    * will flush the old parents
+    */
+    if (ospf_nexthop_calculation (area, v, w, l, distance))
+        trickle_up (w_lsa-&gt;stat, candidate);
+}
+</code></pre>
+<p> 如果候选列表为空，最短路径树 （传输 节 点） 就被构建完成， 这一部分过程结束。</p>
+</li>
+</ol>
+<h4 id="对zebra源码进行编译，打开终端"><a href="#对zebra源码进行编译，打开终端" class="headerlink" title="对zebra源码进行编译，打开终端"></a>对zebra源码进行编译，打开终端</h4><p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image012.png" alt="img"></p>
+<p>\6.    在下方终端里依次执行以下指令：</p>
+<p><code>(1)  make</code></p>
+<p><code>(2)  sudo make install</code></p>

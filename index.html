@@ -148,6 +148,234 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-内核编译/VSCode远程修改及编译过程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="VSCode远程修改及编译过程"><a href="#VSCode远程修改及编译过程" class="headerlink" title="VSCode远程修改及编译过程"></a>VSCode远程修改及编译过程</h2><p>VSCode版本号：1.67.2</p>
+<p>Linux内核版本：5.4.1</p>
+<h4 id="安装SSH插件"><a href="#安装SSH插件" class="headerlink" title="安装SSH插件"></a>安装SSH插件</h4><p>SSH插件版本号：v0.80.0</p>
+<p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image002.jpg" alt="img"></p>
+<h4 id="配置远程服务器信息"><a href="#配置远程服务器信息" class="headerlink" title="配置远程服务器信息"></a>配置远程服务器信息</h4><p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image004.jpg" alt="img"></p>
+<p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image006.jpg" alt="img"></p>
+<h4 id="连接到服务器后，打开下图所示文件夹"><a href="#连接到服务器后，打开下图所示文件夹" class="headerlink" title="连接到服务器后，打开下图所示文件夹"></a>连接到服务器后，打开下图所示文件夹</h4><p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image008.jpg" alt="img"></p>
+<h4 id="更改ospf-mdr-myospf-ospf-spf-c文件中的ospf-spf-next函数"><a href="#更改ospf-mdr-myospf-ospf-spf-c文件中的ospf-spf-next函数" class="headerlink" title="更改ospf-mdr/myospf/ospf_spf.c文件中的ospf_spf_next函数"></a>更改ospf-mdr/myospf/ospf_spf.c文件中的ospf_spf_next函数</h4><p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image010.jpg" alt="img"></p>
+<p><code>ospf_spf_next (struct vertex *v, struct ospf_area *area, struct pqueue * candidate)</code><strong>函数说明</strong>：</p>
+<ul>
+<li><p>该函数的作用是让每个路由器以自己为树根构建最短路径树</p>
+</li>
+<li><p>参数 v：新加入最短路径树的节点。</p>
+</li>
+<li><p>参数 area：需要计算最短路径树的区域。</p>
+</li>
+<li><p>参数 candidate：候选列表，即存放除根节点以外的其他节点，从候选列表中选择节点，然后将这些节点加入最短路径树</p>
+</li>
+</ul>
+<p>以下是OSPF最短路径树算法细节：</p>
+<p>(1)  将新加入树的节点称为节点V。查看与节点 V 关联的 LSA（函数中的<strong>while循环</strong>）。这是在区域area的连接状态数据库中基于节点标识的查找。如果是一个 Router-LSA，且Router-LSA 中设置了V 位，将区域 A 的 TransitCapability 设为TRUE:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (v-&gt;type == OSPF_VERTEX_ROUTER)</span><br><span class="line">&#123;</span><br><span class="line">      <span class="keyword">if</span> (IS_ROUTER_LSA_VIRTUAL ((struct router_lsa *) v-&gt;lsa))</span><br><span class="line">           area-&gt;transit = OSPF_TRANSIT_TRUE;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在任何情况下， LSA 描述的每个连接都给出了到达邻接节点的距离值。对于所描述的每个连接 W（称为将节点 W 加入节点 V）：</p>
+<ol>
+<li><p>如果连接为stub网络 ，检查节点 V 的 LSA 中下一个连接。到stub网络的连接在最短路径计算的第二步中考虑。</p>
+</li>
+<li><p> 否则，节点 W 为传输节点（ 路由器或传输网络 ），在区域 A 的连接状态数据库中查找节点 W 的 LSA（ Router-LSA 或 Network-LSA ）。如果不存在该 LSA ，或 LSA时限等于 MaxAge ， 或不存在指回节点 V 的连接 ，检查 LSA 中下一个连接 。<strong>（这部分不需要改）</strong></p>
+</li>
+<li><p>如果节点 W 已经在最短路径树上， 检查 LSA 中下一个连接 。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (w_lsa-&gt;stat == LSA_SPF_IN_SPFTREE)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">continue</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>以下是计算最短路径树<strong>关键代码</strong>：</p>
+</li>
+<li><p>计算从树根到节点 W 路径的连接状态距离值 distance。distance 是到达节点 V 最短路径的连接状态距离值（已经计算过），加上 节点 V、 W 之间的连接所宣告距离值。</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (v-&gt;lsa-&gt;type == OSPF_ROUTER_LSA)</span><br><span class="line">	distance = v-&gt;distance + ntohs (l-&gt;m[<span class="number">0</span>].metric);</span><br><span class="line"><span class="keyword">else</span> <span class="comment">/* v is not a Router-LSA */</span></span><br><span class="line">    distance = v-&gt;distance;</span><br></pre></td></tr></table></figure>
+
+<p>如果 distance： 大于候选列表中节点 W 已经有的值 ，检查下一个连接 ：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (w-&gt;distance &lt; distance)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="keyword">continue</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果 distance： 等于候选列表中节点 W 已经有的值，使用所宣告的连接计算下一跳：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span> <span class="keyword">if</span> (w-&gt;distance == distance)</span><br><span class="line">&#123;</span><br><span class="line">	<span class="comment">/* Found an equal-cost path to W.  </span></span><br><span class="line"><span class="comment">    * Calculate nexthop of to W from V. */</span></span><br><span class="line">    ospf_nexthop_calculation (area, v, w, l, distance);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>计算的输入为目标（W）及其父节点（ V ），即<code>ospf_nexthop_calculation</code>函数。计算的结果应当加入候选列表中节点 W 的下一跳值。 </p>
+<p>如果 distance： 小于候选列表中节点 W 已经有的值，或 者 W 不在候选列表中，将 W 加入 候选列表，并说明到达树根的距离为distance。同样使用所宣告的连接计算下一跳， 并以此设定 W 的下一跳值：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">else</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/* Found a lower-cost path to W.</span></span><br><span class="line"><span class="comment">    * nexthop_calculation is conditional, if it finds</span></span><br><span class="line"><span class="comment">    * valid nexthop it will call spf_add_parents, which</span></span><br><span class="line"><span class="comment">    * will flush the old parents</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line">    <span class="keyword">if</span> (ospf_nexthop_calculation (area, v, w, l, distance))</span><br><span class="line">    	trickle_up (w_lsa-&gt;stat, candidate);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> 如果候选列表为空，最短路径树 （传输 节 点） 就被构建完成， 这一部分过程结束。</p>
+</li>
+</ol>
+<h4 id="对zebra源码进行编译，打开终端"><a href="#对zebra源码进行编译，打开终端" class="headerlink" title="对zebra源码进行编译，打开终端"></a>对zebra源码进行编译，打开终端</h4><p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image012.png" alt="img"></p>
+<p>\6.    在下方终端里依次执行以下指令：</p>
+<p><code>(1)  make</code></p>
+<p><code>(2)  sudo make install</code></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/22/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/VSCode%E8%BF%9C%E7%A8%8B%E4%BF%AE%E6%94%B9%E5%8F%8A%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-内核模块（Kerne module）学习" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/22/%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%EF%BC%88Kerne%20module%EF%BC%89%E5%AD%A6%E4%B9%A0/">内核模块（Kernel module）学习</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/22/%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%EF%BC%88Kerne%20module%EF%BC%89%E5%AD%A6%E4%B9%A0/" class="archive-article-date">
+  	<time datetime="2022-05-22T02:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Linux内核模块简介"><a href="#Linux内核模块简介" class="headerlink" title="Linux内核模块简介"></a>Linux内核模块简介</h2><p>​        Linux内核的整体架构本就非常庞大，其包含的组件也非常多。想要将需要的部分都包含在内核中，一种方法是把所有需要的功能都编译到Linux内核中。这会导致两个问题，一是生成的内核会很大，二是如果要在现有的内核中新增或删除功能，必须重新编译内核。</p>
+<p>​        Linux提供了这样的机制，这种机制被称为模块。内核模块是可以根据需要加载和卸载到内核中的代码片段，它们无需重新启动系统即可扩展内核的功能。模块本身不被编译入内核映像，从而控制了内核的大小。·模块一旦被加载，它就和内核中的其他部分完全一样。</p>
+<h2 id="模块组成"><a href="#模块组成" class="headerlink" title="模块组成"></a>模块组成</h2><p>一个Linux内核模块主要由如下几个部分组成。</p>
+<h5 id="（1）模块加载函数"><a href="#（1）模块加载函数" class="headerlink" title="（1）模块加载函数"></a>（1）模块加载函数</h5><p>当通过insmod或modprobe命令加载内核模块时，模块的加载函数会自动被内核执行，完成本模块的相关初始化工作。<br>Linux内核模块加载函数一般以__init标识声明，模块加载函数以“module_init（函数名）”的形式被指定。它返回整型值，若初始化成功，应返回0。而在初始化失败时，应该返回错误编码。在Linux内核里，错误编码是一个接近于0的负值。</p>
+<h5 id="（2）模块卸载函数"><a href="#（2）模块卸载函数" class="headerlink" title="（2）模块卸载函数"></a>（2）模块卸载函数</h5><p>当通过rmmod命令卸载某模块时，模块的卸载函数会自动被内核执行，完成与模块卸载函数相反的功能。</p>
+<p>Linux内核模块加载函数一般以__exit标识声明，模块卸载函数在模块卸载的时候执行，而不返回任何值，且必须以“module_exit（函数名）”的形式来指定。</p>
+<h5 id="（3）模块许可证声明许可证（LICENSE）"><a href="#（3）模块许可证声明许可证（LICENSE）" class="headerlink" title="（3）模块许可证声明许可证（LICENSE）"></a>（3）模块许可证声明许可证（LICENSE）</h5><p>声明描述内核模块的许可权限，如果不声明LICENSE，模块被加载时，将收到内核被污染（Kernel Tainted）的警告。在Linux内核模块领域，可接受的LICENSE包括“GPL”、“GPL v2”、“GPLand additional rights”、“Dual BSD/GPL”、“Dual MPL/GPL”和“Proprietary”（关于模块是否可以采用非GPL许可权，如“Proprietary”，这个在学术界和法律界都有争议）。大多数情况下，内核模块应遵循GPL兼容许可权。Linux内核模块最常见的是以MODULE_LICENSE（“GPL v2”）语句声明模块采用GPL v2。</p>
+<h5 id="（4）模块参数（可选）"><a href="#（4）模块参数（可选）" class="headerlink" title="（4）模块参数（可选）"></a>（4）模块参数（可选）</h5><p>模块参数是模块被加载的时候可以传递给它的值，它本身对应模块内部的全局变量。</p>
+<h5 id="（5）模块导出符号（可选）"><a href="#（5）模块导出符号（可选）" class="headerlink" title="（5）模块导出符号（可选）"></a>（5）模块导出符号（可选）</h5><p>内核模块可以导出的符号（symbol，对应于函数或变量），若导出，其他模块则可以使用本模块中的变量或函数。</p>
+<h5 id="（6）模块作者等信息声明（可选）"><a href="#（6）模块作者等信息声明（可选）" class="headerlink" title="（6）模块作者等信息声明（可选）"></a>（6）模块作者等信息声明（可选）</h5><p>MODULE_AUTHOR、MODULE_DESCRIPTION、MODULE_VERSION、MODULE_DEVICE_TABLE、MODULE_ALIAS分别声明模块的作者、描述、版本、设备表和别名</p>
+<h2 id="获取模块信息"><a href="#获取模块信息" class="headerlink" title="获取模块信息"></a>获取模块信息</h2><p>​        模块存储在 <code>/usr/lib/modules/kernel_release</code>. 可以使用<code>uname -r</code>命令获取当前的内核版本。</p>
+<p>要显示当前加载了哪些内核模块：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> lsmod</span></span><br></pre></td></tr></table></figure>
+
+<p>要显示有关模块的信息：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> modinfo 模块名称</span></span><br></pre></td></tr></table></figure>
+
+<p>列出为加载的模块设置的选项：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> systool -v -m 模块名称</span></span><br></pre></td></tr></table></figure>
+
+<p>显示所有模块的综合配置：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> modprobe -c | less</span></span><br></pre></td></tr></table></figure>
+
+<p>要显示特定模块的配置：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> modprobe -c | grep 模块名称</span></span><br></pre></td></tr></table></figure>
+
+<p>列出模块（或别名）的依赖关系，包括模块本身：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">$</span><span class="bash"> modprobe --show-depends 模块名称</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="手动加载-卸载模块"><a href="#手动加载-卸载模块" class="headerlink" title="手动加载/卸载模块"></a>手动加载/卸载模块</h2><p><strong>注意：</strong>如果已升级内核但尚未重新启动，则<em>modprobe</em>将失败且没有错误消息并以代码 1 退出，因为路径<code>/usr/lib/modules/$(uname -r)/</code>不再存在。<em>当modprobe</em>无法确定是否存在这种情况时，手动检查此路径是否存在。</p>
+<p>加载一个模块：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> modprobe 模块名称</span></span><br></pre></td></tr></table></figure>
+
+<p>按文件名加载模块（即未安装在<code>/usr/lib/modules/$(uname -r)/</code>）中的模块：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> insmod 文件名 [args]</span></span><br></pre></td></tr></table></figure>
+
+<p>卸载模块：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> modprobe -r 模块名称</span></span><br></pre></td></tr></table></figure>
+
+<p>或者，或者：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"> rmmod 模块名称</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="故障排除"><a href="#故障排除" class="headerlink" title="故障排除"></a>故障排除</h2><h3 id="模块不加载"><a href="#模块不加载" class="headerlink" title="模块不加载"></a>模块不加载</h3><p>​        如果内核模块中包含的“vermagic”字符串与当前运行的内核的值不匹配，则不会加载模块。如果知道该模块与当前运行的内核兼容，则可以使用<code>modprobe --force-vermagic</code>.</p>
+<blockquote>
+<p><strong>警告：</strong>忽略内核模块的版本检查可能会导致内核崩溃或系统由于不兼容而表现出未定义的行为。<code>--force-vermagic</code>仅在极其谨慎的情况下使用。</p>
+</blockquote>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Kernel</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/05/22/%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%EF%BC%88Kerne%20module%EF%BC%89%E5%AD%A6%E4%B9%A0/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-Quagga(Zebra)源码调试过程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -252,19 +480,24 @@
     <article id="post-内核编译" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/">内核编译学习</a>
+    </h1>
+  
+
+        
+        <a href="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/" class="archive-article-date">
+  	<time datetime="2022-04-25T13:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-25</time>
+</a>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <p>toc: true</p>
-<p>title: 内核编译学习</p>
-<p>author: luokui</p>
-<p>date: 2022-4-25 21:25:18</p>
-<p>tags:</p>
-<ul>
-<li>随笔</li>
-<li>Linux</li>
-<li>Kernel</li>
-</ul>
-<h2 id="内核编译流程"><a href="#内核编译流程" class="headerlink" title="内核编译流程"></a>内核编译流程</h2><p>Ubuntu版本：18.04</p>
+        <h2 id="内核编译流程"><a href="#内核编译流程" class="headerlink" title="内核编译流程"></a>内核编译流程</h2><p>Ubuntu版本：18.04</p>
 <p>Kernel版本：5.4.1</p>
 <h4 id="1-在www-kernel-org上选择要下载的内核版本"><a href="#1-在www-kernel-org上选择要下载的内核版本" class="headerlink" title="1.在www.kernel.org上选择要下载的内核版本"></a>1.在<a target="_blank" rel="noopener" href="http://www.kernel.org上选择要下载的内核版本/">www.kernel.org上选择要下载的内核版本</a></h4><p>下载指定版本Kernel：<a target="_blank" rel="noopener" href="https://mirrors.edge.kernel.org/pub/linux/kernel/%EF%BC%8C%E6%88%91%E8%BF%99%E9%87%8C%E9%80%89%E6%8B%A9%E4%BA%86%E5%92%8C%E7%9B%AE%E5%89%8D%E4%BD%BF%E7%94%A8%E7%9A%84%E5%86%85%E6%A0%B8%E7%89%88%E6%9C%AC%E6%9C%80%E6%8E%A5%E8%BF%91%E7%9A%84%E4%B8%80%E7%89%88%EF%BC%9A5.4.1%E3%80%82">https://mirrors.edge.kernel.org/pub/linux/kernel/，我这里选择了和目前使用的内核版本最接近的一版：5.4.1。</a></p>
 <h4 id="2-解压"><a href="#2-解压" class="headerlink" title="2.解压"></a>2.解压</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo mv linux-5.4.1.tar.xz ~/mydir</span><br><span class="line">cd ~/mydir</span><br><span class="line">sudo tar -xvf linux-5.4.1.tar.xz</span><br></pre></td></tr></table></figure>
@@ -284,9 +517,35 @@
 </blockquote>
 <p>解决方法：将.config文件中的<code>“CONFIG_SYSTEM_TRUSTED_KEYS”</code>置空</p>
 <p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/2.png" alt="image-20220425163222523"></p>
+<p>如果编译时提示：error: ‘-mindirect-branch’ and ‘-fcf-protection’ are not compatible</p>
+<p>可能是gcc版本过高，可以改为gcc8:</p>
+<p><code>apt-get install gcc-8</code></p>
+<p><code>apt-get install g++-8</code></p>
+<p>配置:将gcc8，g++8作为默认选项</p>
+<p><code>sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100</code></p>
+<p><code>sudo update-alternatives --config gcc</code></p>
+<p><code>sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 100</code></p>
+<p><code>sudo update-alternatives --config g++</code></p>
+<p>查看是否成功：</p>
+<p><code>gcc -v</code></p>
+<p><code>g++ -v</code></p>
 <p>编译过程中：</p>
 <p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/3.png" alt="image-20220425171559566"></p>
 <p>编译完成：</p>
+<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/Users\hp\AppData\Roaming\Typora\typora-user-images\image-20220429110528697.png" alt="image-20220429110528697"></p>
+<h4 id="6-编译安装modules"><a href="#6-编译安装modules" class="headerlink" title="6.编译安装modules"></a>6.编译安装modules</h4><p><code>sudo make modules</code>（这一步时间很长）<br><code>sudo make modules_install</code></p>
+<p>以上命令将安装所有构建好的模块，并将其置于文件系统中新内核能够找到的合适位置。模块置于”/lib/modules/[kernel_version]”目录内，[kernel_version]是新内核的版本号。</p>
+<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/Users\hp\AppData\Roaming\Typora\typora-user-images\image-20220505191715245.png" alt="image-20220505191715245"></p>
+<h4 id="7-安装内核"><a href="#7-安装内核" class="headerlink" title="7.安装内核"></a>7.安装内核</h4><p><code>sudo make install</code></p>
+<p>以上命令将会执行如下步骤：</p>
+<ol>
+<li>内核编译系统将会验证内核是够成功编译。</li>
+<li>编译系统会把内核静态部分安装到/boot目录，并以所编译的内核版本号命名此可执行文件。</li>
+<li>内核编译系统将使用编译好的模块自动创建启动阶段需要使用的初始ramdisk映像。</li>
+<li>通知引导程序(bootloader)添加新内核，新内核将被加入到适当的菜单中，以便用户在下次启动中选择。</li>
+<li>完成这些之后，内核就安装成功了，可以安全的重启并尝试使用新的内核映像。此安装不会覆盖任何旧的内核映像，因此如果新内核映像出现了问题，可以选择从旧内核启动。</li>
+</ol>
+<p><img src="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/Users\hp\AppData\Roaming\Typora\typora-user-images\image-20220505212406693.png" alt="image-20220505212406693"></p>
 
       
 
@@ -295,6 +554,25 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Kernel</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -741,7 +1019,45 @@
 </ul>
 <p>　　数据库的事务隔离级别越严格，并发副作用越小，但付出的代价也就越大，因为事务隔离实质上就是使事务在一定程度上“串行化”进行，这显然与“并发”是矛盾的，同时，不同的应用对读一致性和事务隔离程度的要求也是不同的，比如许多应用对“不可重复读”和“幻读”并不敏感，可能更关心数据并发访问的能力。</p>
 <p>　　为了解决“隔离”与“并发”的矛盾，ISO/ANSI SQL92定义了４个事务隔离级别，每个级别的隔离程度不同，允许出现的副作用也不同，应用可以根据自己业务逻辑要求，通过选择不同的隔离级别来平衡＂隔离＂与＂并发＂的矛盾<br><strong>事务４种隔离级别比较</strong></p>
-<p>隔离级别/读数据一致性及允许的并发副作用|读数据一致性|脏读|不可重复读|幻读<br>–|:–:|–:<br>未提交读（Read uncommitted）|最低级别，只能保证不读取物理上损坏的数据|是|是|是<br>已提交读（Read committed）|语句级|否|是|是<br>可重复读（Repeatable read）|事务级|否|否|是<br>可序列化（Serializable）|最高级别，事务级|否|否|否</p>
+<table>
+<thead>
+<tr>
+<th>隔离级别/读数据一致性及允许的并发副作用</th>
+<th>读数据一致性</th>
+<th>脏读</th>
+<th>不可重复读</th>
+<th>幻读</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>未提交读（Read uncommitted）</td>
+<td>最低级别，只能保证不读取物理上损坏的数据</td>
+<td>是</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>已提交读（Read committed）</td>
+<td>语句级</td>
+<td>否</td>
+<td>是</td>
+<td>是</td>
+</tr>
+<tr>
+<td>可重复读（Repeatable read）</td>
+<td>事务级</td>
+<td>否</td>
+<td>否</td>
+<td>是</td>
+</tr>
+<tr>
+<td>可序列化（Serializable）</td>
+<td>最高级别，事务级</td>
+<td>否</td>
+<td>否</td>
+<td>否</td>
+</tr>
+</tbody></table>
 <p>　　最后要说明的是：各具体数据库并不一定完全实现了上述４个隔离级别，例如，Oracle只提供Read committed和Serializable两个标准级别，另外还自己定义的Read only隔离级别：SQL Server除支持上述ISO/ANSI SQL92定义的４个级别外，还支持一个叫做＂快照＂的隔离级别，但严格来说它是一个用MVCC实现的Serializable隔离级别。ＭySQL支持全部４个隔离级别，但在具体实现时，有一些特点，比如在一些隔离级下是采用MVCC一致性读，但某些情况又不是。</p>
 
       
@@ -900,258 +1216,6 @@
 
 
   
-    <article id="post-STK-Python-API" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/11/09/STK-Python-API/">STK Python API</a>
-    </h1>
-  
-
-        
-        <a href="/2021/11/09/STK-Python-API/" class="archive-article-date">
-  	<time datetime="2021-11-09T02:38:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-11-09</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h4 id="关于STK-Python-API"><a href="#关于STK-Python-API" class="headerlink" title="关于STK Python API"></a>关于STK Python API</h4><p>从历史上看，从 Python 与 STK 桌面和 STK 引擎的交互是使用win32com或comtypes Python 模块实现的。虽然这些方法仍然有效并且仍然受支持，但 STK Python API 提供了以下优点：</p>
-<ul>
-<li><p>跨平台支持：假设遵循通常的跨平台 Python 准则，使用与 STK 引擎交互的新 API 编写的代码无需修改即可在 Windows 和 Linux 上使用。</p>
-</li>
-<li><p>可用性改进：</p>
-<ul>
-<li>STK 对象模型类型具有对 Python 帮助功能的内置支持。</li>
-<li>新 API 为所有枚举提供了定义。使用 win32com，必须根据相应的数值手动定义枚举。</li>
-<li>通过类型提示（基于输入模块）提供更好的 IDE 支持。</li>
-</ul>
-</li>
-</ul>
-<p>局限性：</p>
-<ul>
-<li>当前不支持事件。</li>
-<li>目前不支持引擎和 UI 插件的开发。</li>
-<li>当前不支持通过将 IAgSTKXApplication.EnableConnect 设置为 True 来启用套接字连接。可以通过对象模型root ExecuteCommand 方法使用连接命令。</li>
-</ul>
-        
-          <a class="article-more-a" href="/2021/11/09/STK-Python-API/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">STK</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/11/09/STK-Python-API/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-STK集成其他应用程序" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/11/08/STK%E9%9B%86%E6%88%90%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F/">STK集成其他应用程序</a>
-    </h1>
-  
-
-        
-        <a href="/2021/11/08/STK%E9%9B%86%E6%88%90%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F/" class="archive-article-date">
-  	<time datetime="2021-11-08T11:57:48.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-11-08</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>要将 STK 与另一个应用程序连接，可以使用各种选项，这取决于所涉及的任务类型（仅分析？分析和可视化？回放可视化？）、客户端应用程序的类型（MATLAB、自定义应用程序、MS Office 、Web 浏览器等），以及开发应用程序的环境（包括 STK MATLAB、STK 的 COM 接口、查看器控件和查看器应用程序对象模型，以及许多不同的连接库）。</p>
-<p><img src="/2021/11/08/STK%E9%9B%86%E6%88%90%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F/pasted-0.png" alt="STK联合其它应用"></p>
-<h3 id="Connect模块"><a href="#Connect模块" class="headerlink" title="Connect模块"></a>Connect模块</h3><p>Connect 模块提供了一种与 STK 连接并在客户端-服务器环境中工作的简单方法。您可以使用 Connect 附带的库轻松构建与 STK 通信的应用程序。该库包含可用于将第三方应用程序连接到 STK 的函数、常量和其他消息传递功能。通过 Connect，可以生成可选的诊断消息。此外，Connect 允许您覆盖标准消息并对其进行修改或使用您自己的消息格式以与第三方应用程序兼容。这些功能使您可以更好地控制消息传递环境。</p>
-<p>Connect 与 STK 和 3D Graphics 通信，因此您可以实时可视化事件。例如，您可以使用 Connect 从任务的发射和早期轨道提供实时遥测数据。作为场景，可以以 2D 或 3D 方式查看数据以可视化任务并帮助理解和解决可能出现的任何问题。</p>
-<h4 id="开始使用连接"><a href="#开始使用连接" class="headerlink" title="开始使用连接"></a>开始使用连接</h4><p>要使用来自外部应用程序或 HTML 页面的 Connect 命令与 STK 通信，您可以使用：</p>
-<ol>
-<li>用于通过指定端口发送 Connect 命令的 TCP/IP 连接。此连接的默认端口是 5001，但您可以通过选择 Edit -&gt; Preferences 并选择 Connect 页面来更改它。</li>
-<li>STK 的 COM 接口（参见集成帮助系统），可将 Connect 命令直接发送到 STK，无需通过端口进行通信。</li>
-</ol>
-<p><img src="/2021/11/08/STK%E9%9B%86%E6%88%90%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F/pasted-1.png" alt="两种连接方式"></p>
-<h4 id="使用-AgConnect-库-API"><a href="#使用-AgConnect-库-API" class="headerlink" title="使用 AgConnect 库 API"></a>使用 AgConnect 库 API</h4><p>AgConnect 库 API 旨在为第三方应用程序提供一种通信工具，以向 STK 发送命令和从 STK 接收数据。AgConnect API 由一组函数组成，这些函数允许您打开与 STK 的连接、发送 Connect 命令并从 STK 接收数据作为响应，然后在完成后关闭连接。AgConnect API 还提供消息传递功能，允许您以各种用户定义的方式打印错误和诊断消息。如果需要，您可以覆盖消息传递功能并将其用于您自己的目的。使用 AgConnect，您只需提供您希望连接的 STK 产品的地址。可以使用返回任何预期数据的单个函数发送连接命令，从而对应用程序隐藏低级连接协议。</p>
-<p><img src="/2021/11/08/STK%E9%9B%86%E6%88%90%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F/pasted-2.png" alt="使用 AgConnect 库 API"></p>
-<h4 id="连接示例（C-）"><a href="#连接示例（C-）" class="headerlink" title="连接示例（C++）"></a>连接示例（C++）</h4><p>演示如何自动化和扩展 STK 应用程序或在 C++ 中构建自定义应用程序的 C++ 代码示例随 STK 一起提供。所有 C++ 代码示例都位于 &lt;STK 安装文件夹&gt;/CodeSamples/CodeSamples.zip/{CustomApplications | 自动化 | 扩展 }/C++/<Project> 文件夹。由于大多数用户对默认安装位置没有写权限，我们建议您将带有 .zip 文件的 CodeSamples 文件夹复制到系统上的可写位置。该位置是您的 &lt;代码示例位置&gt;，将在下面的说明中引用。</Project></p>
-<p>所有 AgConnect 应用程序都必须使用AGCONNECT 预处理器定义进行编译。该_AFXDLL还需要预处理器定义。如果AGCONNECT未定义标志，编译器将无法识别AgUtMsgCommon.h.</p>
-<p>除了源文件和头文件之外，AgConnect 还附带一个库文件 AgConnect.lib，在生成任何 AgConnect 可执行文件时必须链接该文件。</p>
-<hr>
-<p>所有 AgConnect 应用程序都必须定义以下变量：</p>
-<p><code>char AgEAppName[ ]= &quot;&lt;AppName&gt;&quot;;</code></p>
-<p><code>&lt;AppName&gt;</code>是您选择的任何名称，并在AgUtMsg消息中使用。如果你的源文件是用C++编写的，一定要定义AgEAppName如下：</p>
-<p><code>extern &quot;C&quot; &#123; char AgEAppName[ ]=&quot;&lt;AppName&gt;&quot;; &#125;</code></p>
-<p>任何使用 AgConnect 函数的 C 或 C++ 程序必须包括AgConnect.h：</p>
-<p><code>#include &quot;AgConnect.h&quot;</code></p>
-<p>必须定义四个变量。首先，标识正在使用的连接的上下文变量应初始化为NULL：</p>
-<p><code>char *connection1 = NULL;</code></p>
-<p>其次，AgConnect 需要定义文件名字符串。文件名可以设置为 NULL，在这种情况下使用默认文件，或者它可以设置为您希望使用的 AgConnect 初始化文件：</p>
-<p><code>char *initFileName = NULL;</code></p>
-<p>第三，AgConnect 需要知道 STK 连接的名称。该变量采用以下形式server:port：</p>
-<p><code>静态字符连接名称[256] = &quot;localhost:5001&quot;;</code></p>
-<p>最后，AgConnect 必须有一个地方来存储 Connect 命令返回的数据。因此，AgTConReturnInfo应该定义一个类型的变量：</p>
-<p><code>AgTConReturnInfo returnInfo;</code></p>
-<p>此时，您可以通过调用来初始化 AgConnect：</p>
-<p><code>AgConInit(initFileName);</code></p>
-<p>接下来，可以使用以下AgConOpenSTK()函数打开与 STK 的连接：</p>
-<p><code>AgConOpenSTK(&amp;connection1, NULL, connectName);</code></p>
-<p>context传递给此函数的变量应该传递给需要与此连接对话的任何未来函数。</p>
-<p>现在 AgConnect 已初始化并已建立到 STK 的连接，可以使用类似于此处显示的调用将命令发送到 STK，该调用会加载场景（其文件为“C:\STKData\BasicScenarios\Basic.sc” ) 到 STK：</p>
-<p><code>AgConProcessSTKCmd (connection1, &quot;Load / Scenario C:\STKData\BasicScenarios\Basic.sc&quot;, &amp;returnInfo);</code></p>
-<p>如果您希望在任何时候接收从 STK 返回的异步数据包，请使用以下命令：</p>
-<p><code>AgConGetAsync(connection1, &amp;returnInfo);</code></p>
-<p>当您希望关闭与 STK 的连接时，请使用以下命令：</p>
-<p><code>AgConCloseSTK(&amp;connection1);</code></p>
-<p>最后，调用：</p>
-<p><code>AgConShutdownConnect();</code></p>
-<p>释放 AgConnect 库内部分配的内存。在此调用之后，可以关闭应用程序。</p>
-<p>的示例代码示出了打开到STK的连接，负载的情形下，发送AllAccess连接命令，关闭连接并打印出该数据的完整的程序。按照以下步骤在 Visual Studio 中设置 C++ 连接示例代码。</p>
-<h4 id="在-Visual-Studio-中设置-C-Connect-示例"><a href="#在-Visual-Studio-中设置-C-Connect-示例" class="headerlink" title="在 Visual Studio 中设置 C++ Connect 示例"></a>在 Visual Studio 中设置 C++ Connect 示例</h4><ol>
-<li><p>打开 Visual Studio。</p>
-</li>
-<li><p>创建一个新项目。</p>
-</li>
-<li><p>在 Visual C++ &gt; 其他下，选择空项目。</p>
-</li>
-<li><p>为您的项目输入一个名称，然后单击“确定”。</p>
-</li>
-<li><p>在解决方案资源管理器中，右键单击 Source Files 文件夹并选择 Add &gt; New Item… 。</p>
-</li>
-<li><p>选择 C++ 文件并输入文件名，然后单击确定。</p>
-</li>
-<li><p>使用上面的示例代码链接并复制该页面上的所有文本。</p>
-</li>
-<li><p>将文本粘贴到您的“cpp”文件中。</p>
-</li>
-<li><p>确保您选择了 x64 配置，因为 STK 是 64 位应用程序。</p>
-</li>
-<li><p>右键单击项目并选择属性，然后按照以下步骤操作：</p>
-<p>a. 在 VC++ 目录下：</p>
-<p>   i. 将 &lt;代码示例位置&gt;\Connect\Includes 添加到“包含目录”。</p>
-<p>   ii. 将 &lt;代码示例位置&gt;\Connect\lib\Debug 添加到“库目录”。</p>
-<p>b. 在 C/C++ &gt; Preprocessor 下，将“AGCONNECT”添加到“Preprocessor Definitions”。</p>
-<p>c. 在链接器 &gt; 输入下，将“agconnect.lib”添加到“附加依赖项”。</p>
-</li>
-<li><p>确保您已使用 STK 安装路径更新了 Load 命令。</p>
-</li>
-<li><p>构建项目。</p>
-</li>
-<li><p>构建项目后，将 AgConnect.dll 从 &lt;代码示例位置&gt;\Connect\bin\Debug 复制到项目的输出目录。</p>
-</li>
-</ol>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">STK</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/11/08/STK%E9%9B%86%E6%88%90%E5%85%B6%E4%BB%96%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
   
     <nav id="page-nav">
       <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &amp;raquo;</a>
@@ -1270,6 +1334,10 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color4">STK</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color2">Kernel</a>
               </li>
             
             <div class="clearfix"></div>
