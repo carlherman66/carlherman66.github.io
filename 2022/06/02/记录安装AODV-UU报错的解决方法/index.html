@@ -6,15 +6,25 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://carlherman66.github.io">
-  <title>Tag: Kernel | LK&#39;Blog</title>
+  <title>记录安装AODV-UU报错的解决方法 | LK&#39;Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
-<meta property="og:title" content="LK&#39;Blog">
-<meta property="og:url" content="http://carlherman66.github.io/tags/Kernel/index.html">
+  <meta name="description" content="AODV-UU简介AODV-UU是一种 Ad Hoc 网络路由协议，是由瑞典乌普萨拉大学（Uppsala University，所以是uu）联合爱立信公司发布的一种路由协议。AODV（Ad hoc On-Demand Distance Vector Routing，无线自组网按需平面距离矢量路由协议）的特点是按需使用，也就是需要的时候才去找路由。 AODV-UU包含了几种控制消息（control">
+<meta property="og:type" content="article">
+<meta property="og:title" content="记录安装AODV-UU报错的解决方法">
+<meta property="og:url" content="http://carlherman66.github.io/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/index.html">
 <meta property="og:site_name" content="LK&#39;Blog">
+<meta property="og:description" content="AODV-UU简介AODV-UU是一种 Ad Hoc 网络路由协议，是由瑞典乌普萨拉大学（Uppsala University，所以是uu）联合爱立信公司发布的一种路由协议。AODV（Ad hoc On-Demand Distance Vector Routing，无线自组网按需平面距离矢量路由协议）的特点是按需使用，也就是需要的时候才去找路由。 AODV-UU包含了几种控制消息（control">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://carlherman66.github.io/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%5Cimage-20220604183521685.png">
+<meta property="og:image" content="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image002.jpg">
+<meta property="article:published_time" content="2022-06-02T13:25:18.000Z">
+<meta property="article:modified_time" content="2022-06-04T10:59:08.063Z">
 <meta property="article:author" content="luokui">
+<meta property="article:tag" content="随笔">
+<meta property="article:tag" content="Linux">
+<meta property="article:tag" content="Kernel">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://carlherman66.github.io/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%5Cimage-20220604183521685.png">
   
     <link rel="alternative" href="/atom.xml" title="LK&#39;Blog" type="application/atom+xml">
   
@@ -146,36 +156,133 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
+            <article id="post-记录安装AODV-UU报错的解决方法" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
+    <h1 class="article-title" itemprop="name">
+      记录安装AODV-UU报错的解决方法
+    </h1>
   
-    
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2022" class="archive-year">2022</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/" class="archive-article-date">
+
+        
+        <a href="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/" class="archive-article-date">
   	<time datetime="2022-06-02T13:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-06-02</time>
 </a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/">记录安装AODV-UU报错的解决方法</a>
-    </h1>
-  
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="AODV-UU简介"><a href="#AODV-UU简介" class="headerlink" title="AODV-UU简介"></a>AODV-UU简介</h2><p>AODV-UU是一种 Ad Hoc 网络路由协议，是由瑞典乌普萨拉大学（Uppsala University，所以是uu）联合爱立信公司发布的一种路由协议。AODV（Ad hoc On-Demand Distance Vector Routing，无线自组网按需平面距离矢量路由协议）的特点是按需使用，也就是需要的时候才去找路由。</p>
+<p>AODV-UU包含了几种控制消息（control messages）：</p>
+<table>
+<thead>
+<tr>
+<th><strong>RREQ：Route Request</strong></th>
+<th><strong>路由请求消息</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RREP：Route Reply</strong></td>
+<td><strong>路由回复消息</strong></td>
+</tr>
+<tr>
+<td><strong>RERR：Route Error</strong></td>
+<td><strong>路由错误消息</strong></td>
+</tr>
+<tr>
+<td><strong>RREP_ack：Route Reply Acknowledgment</strong></td>
+<td><strong>路由回复确认消息</strong></td>
+</tr>
+</tbody></table>
+<p>当一个节点需要寻路的时候，用的是洪泛的方式，广播RREQ消息，然后沿途的节点自动建立反向路由，目标节点收到RREQ后生成RREP（中间节点如果有足够新的合法路由，也可以生成RREP）返回，用这种方式建立路由。</p>
+<p>下图是原始的AODV-UU的体系结构及其实现示意图：</p>
+<p><img src="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%5Cimage-20220604183521685.png" alt="image-20220604183521685"></p>
+<p>这个AODV实现作为一个用户空间守护进程运行，维护内核路由表。Netfilter用于捕获数据包、过滤在用户空间中完成。原始的AODV-UU只支持内核2.4/2.6版本，在原始AODV-UU中，数据包由使用UDP 654端口运行的AODV Deamon根据消息类型进行处理。如果一个数据包通过netfilter传递到用户空间，它将由libipq记录。然而，这个模块已从最近的内核中删除。因此，在新的版本中取消使用libipq，转而使用直接队列。</p>
+<h3 id="安装时报错解决办法："><a href="#安装时报错解决办法：" class="headerlink" title="安装时报错解决办法："></a>安装时报错解决办法：</h3><p>由于目前最新的AODV-UU也只支持到4.14版本内核，而我们使用的内核版本在5.4以上，因此也是出现了一些不兼容的情况，具体报错有以下一系列：</p>
+<ol>
+<li><blockquote>
+<p>对‘hello_update_timeout’未定义的引用：</p>
+<p>解决方法：头文件函数定义前加extern</p>
+</blockquote>
+</li>
+<li><blockquote>
+<p> 对‘rt_table_update_timeout’未定义的引用：</p>
+<p>解决方法：头文件函数定义前加extern</p>
+</blockquote>
+</li>
+<li><blockquote>
+<p> kaodv-mod.c:22:10: fatal error: linux/version.h: 没有那个文件或目录</p>
+<p>解决方法：将系统文件拷贝到内核模块头文件目录下</p>
+<p><code>sudo cp /usr/include/linux/version.h /lib/modules/5.4.1/build/include/linux/</code></p>
+</blockquote>
+</li>
+<li><blockquote>
+<p>make[2]: 进入目录“/home/hyh/mydir/linux-5.4.1”</p>
+<p>WARNING: Symbol version dump ./Module.symvers is missing; modules will have no dependencies and modversions.</p>
+<p>Building modules, stage 2.</p>
+<p> MODPOST 0 modules</p>
+<p>/bin/sh: 1: scripts/mod/modpost: not found</p>
+<p>scripts/Makefile.modpost:93: recipe for target ‘__modpost’ failed</p>
+<p>解决方法：回到/usr/src/linux-5.4.1目录下，如下操作</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo make oldconfig</span><br><span class="line">sudo make prepare</span><br><span class="line">sudo make scripts</span><br></pre></td></tr></table></figure></blockquote>
+</li>
+<li><blockquote>
+<p>./arch/x86/include/asm/uaccess.h:29:27: error: unknown type name ‘mm_segment_t’; did you mean ‘apm_event_t’?</p>
+<p> static inline void set_fs(mm_segment_t fs)</p>
+<p>​            ^~~~~~~~~~~~</p>
+<p>  apm_event_t</p>
+<p>In file included from ./arch/x86/include/asm/uaccess.h:7:0,</p>
+<p>from /home/hyh/AODV-UU-0.9.6-on-kernel-4.14/aodv-uu-0.9.6/lnx/kaodv-debug.c:22:</p>
+<p>./arch/x86/include/asm/uaccess.h: In function ‘user_access_begin’:</p>
+<p>./arch/x86/include/asm/uaccess.h:37:26: error: ‘current’ undeclared (first use in this function)</p>
+<p> #define user_addr_max() (current-&gt;thread.addr_limit.seg)</p>
+<p>解决方法：</p>
+<p>Makefile取消对kaodv-debug的编译（错误方法，会导致出现问题6）</p>
+<p>将kaodv-debug.c文件中#include &lt;asm/uaccess.h&gt;改为#include &lt;linux/uaccess.h&gt;（正确方法）</p>
+</blockquote>
+</li>
+<li><blockquote>
+<p>insmod: ERROR: could not insert module kaodv.ko: Unknown symbol in module</p>
+<p>以下摘自<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/409648724">https://zhuanlan.zhihu.com/p/409648724</a></p>
+<blockquote>
+<p>Linux内核中，一个模块的编译如果需要调用内核提供的各种接口，需要依赖内核编译时生成的Module.symvers文件，在这个文件中保存了大量通过EXPORT_SYMBOL导出的全局符号。同理，如果一个源码外单独编译的模块也需要导出一些函数接口给内核其他模块使用，也会生成一个独立的Module.symvers文件，其他模块在编译时，需要显示指定这个Module.symvers文件的位置，然后才能调用你这个模块实现的函数接口。明白了这个道理之后，再去看看上面的编译错误，就非常简单了：如果你在Linux内核源码外编译一个独立的模块，需要你先编译一遍内核，生成对应的Module.symvers文件，独立的模块需要依赖这个文件才能正常编译，否则就会报错</p>
+</blockquote>
+</blockquote>
+</li>
+</ol>
+<p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image002.jpg" alt="img"></p>
+<ol start="7">
+<li><blockquote>
+<p>ERROR: “trace” [/home/hyh/AODV-UU-0.9.6-on-kernel-4.14/aodv-uu-0.9.6/lnx/kaodv.ko] undefined!</p>
+<p>scripts/Makefile.modpost:93: recipe for target ‘__modpost’ failed</p>
+</blockquote>
+<p>没有成功生成kaodv.ko，因为问题5的错误操作（取消了对kaodv-debug的编译），导致缺少一些关键文件</p>
+</li>
+<li><p>insmod时出现问题，dmesg查看报错信息如下：</p>
+</li>
+</ol>
+<blockquote>
+<p>[51787.844197] kaodv: no symbol version for module_layout</p>
+<p>[51787.844200] kaodv: loading out-of-tree module taints kernel.</p>
+<p>[51787.844261] kaodv: module verification failed: signature and/or required key missing - tainting kernel</p>
+<p>是由于module签名导致的，有两种方式解决：</p>
+<p>·   在当前linux 系统的kernel源码下修改config文件，CONFIG_MODULE_SIG=n</p>
+<p>·   在驱动的Makefile文件里面添加这行CONFIG_MODULE_SIG=n</p>
+<p>[51787.844811] kaodv: Unknown symbol trace (err -2)</p>
+<p>[51959.172306] kaodv: Unknown symbol trace (err -2)（这是问题6的报错）</p>
+</blockquote>
 
-        <div class="article-info info-on-right">
-          
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -195,111 +302,119 @@
 		</ul>
 	</div>
 
-          
+      
 
+      
+
+      
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="clearfix"></div>
-    </header>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://carlherman66.github.io/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/" alt="微信分享二维码">
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/22/%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%EF%BC%88Kerne%20module%EF%BC%89%E5%AD%A6%E4%B9%A0/" class="archive-article-date">
-  	<time datetime="2022-05-22T02:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2022/05/22/VSCode%E8%BF%9C%E7%A8%8B%E4%BF%AE%E6%94%B9%E5%8F%8A%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title"></div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/22/%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%EF%BC%88Kerne%20module%EF%BC%89%E5%AD%A6%E4%B9%A0/">内核模块（Kernel module）学习</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Kernel</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#AODV-UU%E7%AE%80%E4%BB%8B"><span class="toc-number">1.</span> <span class="toc-text">AODV-UU简介</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E6%97%B6%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E5%8A%9E%E6%B3%95%EF%BC%9A"><span class="toc-number">1.1.</span> <span class="toc-text">安装时报错解决办法：</span></a></li></ol></li></ol>
+                    </div>
+                </span>
+            </div>
         </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
+        
+    </div>
+</aside>
+
+
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/" class="archive-article-date">
-  	<time datetime="2022-04-25T13:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-25</time>
-</a>
-        </div>
-    	 
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/">内核编译学习</a>
-    </h1>
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Kernel</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
   
 
-    
+  
+
+  
 
 
           </div>
@@ -319,9 +434,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: false,
 		toc_hide_index: true,

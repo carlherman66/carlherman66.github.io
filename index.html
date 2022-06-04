@@ -148,6 +148,186 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-记录安装AODV-UU报错的解决方法" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/">记录安装AODV-UU报错的解决方法</a>
+    </h1>
+  
+
+        
+        <a href="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/" class="archive-article-date">
+  	<time datetime="2022-06-02T13:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-06-02</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="AODV-UU简介"><a href="#AODV-UU简介" class="headerlink" title="AODV-UU简介"></a>AODV-UU简介</h2><p>AODV-UU是一种 Ad Hoc 网络路由协议，是由瑞典乌普萨拉大学（Uppsala University，所以是uu）联合爱立信公司发布的一种路由协议。AODV（Ad hoc On-Demand Distance Vector Routing，无线自组网按需平面距离矢量路由协议）的特点是按需使用，也就是需要的时候才去找路由。</p>
+<p>AODV-UU包含了几种控制消息（control messages）：</p>
+<table>
+<thead>
+<tr>
+<th><strong>RREQ：Route Request</strong></th>
+<th><strong>路由请求消息</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>RREP：Route Reply</strong></td>
+<td><strong>路由回复消息</strong></td>
+</tr>
+<tr>
+<td><strong>RERR：Route Error</strong></td>
+<td><strong>路由错误消息</strong></td>
+</tr>
+<tr>
+<td><strong>RREP_ack：Route Reply Acknowledgment</strong></td>
+<td><strong>路由回复确认消息</strong></td>
+</tr>
+</tbody></table>
+<p>当一个节点需要寻路的时候，用的是洪泛的方式，广播RREQ消息，然后沿途的节点自动建立反向路由，目标节点收到RREQ后生成RREP（中间节点如果有足够新的合法路由，也可以生成RREP）返回，用这种方式建立路由。</p>
+<p>下图是原始的AODV-UU的体系结构及其实现示意图：</p>
+<p><img src="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95%5Cimage-20220604183521685.png" alt="image-20220604183521685"></p>
+<p>这个AODV实现作为一个用户空间守护进程运行，维护内核路由表。Netfilter用于捕获数据包、过滤在用户空间中完成。原始的AODV-UU只支持内核2.4/2.6版本，在原始AODV-UU中，数据包由使用UDP 654端口运行的AODV Deamon根据消息类型进行处理。如果一个数据包通过netfilter传递到用户空间，它将由libipq记录。然而，这个模块已从最近的内核中删除。因此，在新的版本中取消使用libipq，转而使用直接队列。</p>
+<h3 id="安装时报错解决办法："><a href="#安装时报错解决办法：" class="headerlink" title="安装时报错解决办法："></a>安装时报错解决办法：</h3><p>由于目前最新的AODV-UU也只支持到4.14版本内核，而我们使用的内核版本在5.4以上，因此也是出现了一些不兼容的情况，具体报错有以下一系列：</p>
+<ol>
+<li><blockquote>
+<p>对‘hello_update_timeout’未定义的引用：</p>
+<p>解决方法：头文件函数定义前加extern</p>
+</blockquote>
+</li>
+<li><blockquote>
+<p> 对‘rt_table_update_timeout’未定义的引用：</p>
+<p>解决方法：头文件函数定义前加extern</p>
+</blockquote>
+</li>
+<li><blockquote>
+<p> kaodv-mod.c:22:10: fatal error: linux/version.h: 没有那个文件或目录</p>
+<p>解决方法：将系统文件拷贝到内核模块头文件目录下</p>
+<p><code>sudo cp /usr/include/linux/version.h /lib/modules/5.4.1/build/include/linux/</code></p>
+</blockquote>
+</li>
+<li><blockquote>
+<p>make[2]: 进入目录“/home/hyh/mydir/linux-5.4.1”</p>
+<p>WARNING: Symbol version dump ./Module.symvers is missing; modules will have no dependencies and modversions.</p>
+<p>Building modules, stage 2.</p>
+<p> MODPOST 0 modules</p>
+<p>/bin/sh: 1: scripts/mod/modpost: not found</p>
+<p>scripts/Makefile.modpost:93: recipe for target ‘__modpost’ failed</p>
+<p>解决方法：回到/usr/src/linux-5.4.1目录下，如下操作</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo make oldconfig</span><br><span class="line">sudo make prepare</span><br><span class="line">sudo make scripts</span><br></pre></td></tr></table></figure></blockquote>
+</li>
+<li><blockquote>
+<p>./arch/x86/include/asm/uaccess.h:29:27: error: unknown type name ‘mm_segment_t’; did you mean ‘apm_event_t’?</p>
+<p> static inline void set_fs(mm_segment_t fs)</p>
+<p>​            ^~~~~~~~~~~~</p>
+<p>  apm_event_t</p>
+<p>In file included from ./arch/x86/include/asm/uaccess.h:7:0,</p>
+<p>from /home/hyh/AODV-UU-0.9.6-on-kernel-4.14/aodv-uu-0.9.6/lnx/kaodv-debug.c:22:</p>
+<p>./arch/x86/include/asm/uaccess.h: In function ‘user_access_begin’:</p>
+<p>./arch/x86/include/asm/uaccess.h:37:26: error: ‘current’ undeclared (first use in this function)</p>
+<p> #define user_addr_max() (current-&gt;thread.addr_limit.seg)</p>
+<p>解决方法：</p>
+<p>Makefile取消对kaodv-debug的编译（错误方法，会导致出现问题6）</p>
+<p>将kaodv-debug.c文件中#include &lt;asm/uaccess.h&gt;改为#include &lt;linux/uaccess.h&gt;（正确方法）</p>
+</blockquote>
+</li>
+<li><blockquote>
+<p>insmod: ERROR: could not insert module kaodv.ko: Unknown symbol in module</p>
+<p>以下摘自<a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/409648724">https://zhuanlan.zhihu.com/p/409648724</a></p>
+<blockquote>
+<p>Linux内核中，一个模块的编译如果需要调用内核提供的各种接口，需要依赖内核编译时生成的Module.symvers文件，在这个文件中保存了大量通过EXPORT_SYMBOL导出的全局符号。同理，如果一个源码外单独编译的模块也需要导出一些函数接口给内核其他模块使用，也会生成一个独立的Module.symvers文件，其他模块在编译时，需要显示指定这个Module.symvers文件的位置，然后才能调用你这个模块实现的函数接口。明白了这个道理之后，再去看看上面的编译错误，就非常简单了：如果你在Linux内核源码外编译一个独立的模块，需要你先编译一遍内核，生成对应的Module.symvers文件，独立的模块需要依赖这个文件才能正常编译，否则就会报错</p>
+</blockquote>
+</blockquote>
+</li>
+</ol>
+<p><img src="file:///C:/Users/hp/AppData/Local/Temp/msohtmlclip1/01/clip_image002.jpg" alt="img"></p>
+<ol start="7">
+<li><blockquote>
+<p>ERROR: “trace” [/home/hyh/AODV-UU-0.9.6-on-kernel-4.14/aodv-uu-0.9.6/lnx/kaodv.ko] undefined!</p>
+<p>scripts/Makefile.modpost:93: recipe for target ‘__modpost’ failed</p>
+</blockquote>
+<p>没有成功生成kaodv.ko，因为问题5的错误操作（取消了对kaodv-debug的编译），导致缺少一些关键文件</p>
+</li>
+<li><p>insmod时出现问题，dmesg查看报错信息如下：</p>
+</li>
+</ol>
+<blockquote>
+<p>[51787.844197] kaodv: no symbol version for module_layout</p>
+<p>[51787.844200] kaodv: loading out-of-tree module taints kernel.</p>
+<p>[51787.844261] kaodv: module verification failed: signature and/or required key missing - tainting kernel</p>
+<p>是由于module签名导致的，有两种方式解决：</p>
+<p>·   在当前linux 系统的kernel源码下修改config文件，CONFIG_MODULE_SIG=n</p>
+<p>·   在驱动的Makefile文件里面添加这行CONFIG_MODULE_SIG=n</p>
+<p>[51787.844811] kaodv: Unknown symbol trace (err -2)</p>
+<p>[51959.172306] kaodv: Unknown symbol trace (err -2)（这是问题6的报错）</p>
+</blockquote>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Kernel</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-VSCode远程修改及编译过程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
@@ -1087,106 +1267,6 @@
       
         <p class="article-more-link">
           <a class="article-more-a" href="/2021/12/22/MySql%E8%AF%BB%E5%86%99%E5%B9%B6%E5%8F%91%E5%8A%A0%E9%94%81/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-Python更新数据库速度慢的问题" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2021/11/22/Python%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">Python更新数据库速度慢的问题</a>
-    </h1>
-  
-
-        
-        <a href="/2021/11/22/Python%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/" class="archive-article-date">
-  	<time datetime="2021-11-22T08:42:50.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-11-22</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p><strong>最近准备将STK中的卫星位置信息实时写入MySQL数据库中，发现在使用execute update一条一条进行数据更新时速度很慢，1500多条信息居然需要40s，发现是UPDATE效率低下的原因，然后寻找其它更快的方法，发现这样的全表更新很适合使用executemany批量执行</strong></p>
-<ul>
-<li>先写sql语句。要注意的是里面的参数， 不管什么类型，统一使用%s作为占位符，例如，向satellite表(name,latitude,longitude,altitude)插入数据</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sql = &#x27;INSERT INTO satellite(name,latitude,longitude,altitude) VALUES(%s,%s,%s,%s)&#x27;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>对应的param是一个tuple或者list</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">param = ((name1,latitude1,longitude1,altitude1), (name2,latitude2,longitude2,altitude2))</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>这样就包含了两条数据，通过executemany插入</li>
-</ul>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cursor.executemany(sql,param)</span><br></pre></td></tr></table></figure>
-
-<p>将update换成insert后，写1584条数据时间从原先的几十秒变成不到一秒。</p>
-<h4 id="解决Field-‘node-id’-doesn’t-have-a-default-value-问题"><a href="#解决Field-‘node-id’-doesn’t-have-a-default-value-问题" class="headerlink" title="解决Field ‘node_id’ doesn’t have a default value 问题"></a>解决Field ‘node_id’ doesn’t have a default value 问题</h4><pre><code>    写入数据库时报上述错误，其主要原因是因为mysql的中没有将主键设置为自增，所以在增加元素时获取生成主键时出现异常，将主键设为自增后错误消失。
-</code></pre>
-<h4 id="解决删除表后重新INSERT时主键不从1开始的问题"><a href="#解决删除表后重新INSERT时主键不从1开始的问题" class="headerlink" title="解决删除表后重新INSERT时主键不从1开始的问题"></a>解决删除表后重新INSERT时主键不从1开始的问题</h4><pre><code>    由于需要实时向数据库写卫星位置信息，第一次写完1584条数据后删除写第二次时，主键从1585开始，使用以下语句将表设为从1开始自增。
-</code></pre>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cursor.execute(&#x27;alter table satellite_LLA_test auto_increment=1&#x27;)</span><br></pre></td></tr></table></figure>
-
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">MySQL</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2021/11/22/Python%E6%9B%B4%E6%96%B0%E6%95%B0%E6%8D%AE%E5%BA%93%E9%80%9F%E5%BA%A6%E6%85%A2%E7%9A%84%E9%97%AE%E9%A2%98/">展开全文 >></a>
         </p>
       
 
