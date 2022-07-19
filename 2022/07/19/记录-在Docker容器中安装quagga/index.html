@@ -6,13 +6,17 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://carlherman66.github.io">
-  <title>Archives | LK&#39;Blog</title>
+  <title>LK&#39;Blog</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta property="og:type" content="website">
+  <meta name="description" content="toc: true title: 记录-在Docker容器中安装quagga author: luokui tags:  随笔 Linux Docker  1、通过Dockerfile创建一个初始的ubuntu镜像命令如下，将镜像命名为“ubuntu:core”： sudo docker build -t ubuntu:core &#x2F;etc&#x2F;docker Dockerfile文件放在&#x2F;etc&#x2F;doc">
+<meta property="og:type" content="article">
 <meta property="og:title" content="LK&#39;Blog">
-<meta property="og:url" content="http://carlherman66.github.io/archives/index.html">
+<meta property="og:url" content="http://carlherman66.github.io/2022/07/19/%E8%AE%B0%E5%BD%95-%E5%9C%A8Docker%E5%AE%B9%E5%99%A8%E4%B8%AD%E5%AE%89%E8%A3%85quagga/index.html">
 <meta property="og:site_name" content="LK&#39;Blog">
+<meta property="og:description" content="toc: true title: 记录-在Docker容器中安装quagga author: luokui tags:  随笔 Linux Docker  1、通过Dockerfile创建一个初始的ubuntu镜像命令如下，将镜像命名为“ubuntu:core”： sudo docker build -t ubuntu:core &#x2F;etc&#x2F;docker Dockerfile文件放在&#x2F;etc&#x2F;doc">
 <meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-07-19T08:53:50.574Z">
+<meta property="article:modified_time" content="2022-07-19T09:01:49.743Z">
 <meta property="article:author" content="luokui">
 <meta name="twitter:card" content="summary">
   
@@ -146,441 +150,153 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-记录-在Docker容器中安装quagga" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>toc: true</p>
+<p>title: 记录-在Docker容器中安装quagga</p>
+<p>author: luokui</p>
+<p>tags:</p>
+<ul>
+<li>随笔</li>
+<li>Linux</li>
+<li>Docker</li>
+</ul>
+<h4 id="1、通过Dockerfile创建一个初始的ubuntu镜像"><a href="#1、通过Dockerfile创建一个初始的ubuntu镜像" class="headerlink" title="1、通过Dockerfile创建一个初始的ubuntu镜像"></a>1、通过Dockerfile创建一个初始的ubuntu镜像</h4><p>命令如下，将镜像命名为“ubuntu:core”：</p>
+<p><code>sudo docker build -t ubuntu:core /etc/docker</code></p>
+<p>Dockerfile文件放在/etc/docker目录下，内容如下：</p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu:<span class="number">18.04</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> sed -i <span class="string">&#x27;s#http://archive.ubuntu.com/#http://mirrors.tuna.tsinghua.edu.cn/#&#x27;</span> /etc/apt/sources.list;</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install -y iproute2 ethtool</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install net-tools</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install iperf3 -y</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install traceroute</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install git -y</span></span><br></pre></td></tr></table></figure>
+
+<p>由于很多命令都没安装，所以进入docker后还要安装。</p>
+<h4 id="2、通过创建的镜像运行一个docker容器"><a href="#2、通过创建的镜像运行一个docker容器" class="headerlink" title="2、通过创建的镜像运行一个docker容器"></a>2、通过创建的镜像运行一个docker容器</h4><p>命令如下，容器命名为n1：</p>
+<p><code>docker run -td --name n1 --privileged ubuntu:core /bin/bash</code></p>
+<p>进入n1终端：</p>
+<p><code>docker exec -it n1 /bin/bash</code></p>
+<p>安装必要依赖和工具：</p>
+<p><code>apt-get install inetutils-ping</code>       安装ping</p>
+<p><code>apt install build-essential</code>              安装gcc等编译工具</p>
+<p>由于主机上安装过qugga了，因此直接把安装包拷贝到n1中，再编译安装即可：</p>
+<p><code>docker cp ospf-mdr n1:/home</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">root@a6c398ef7a1f:/# cd home/ospf-mdr/</span><br><span class="line">root@a6c398ef7a1f:/home/ospf-mdr# ./configure --disable-doc --enable-user=root --enable-group=root --with-cflags=-ggdb --sysconfdir=/usr/local/etc/quagga --enable-vtysh --localstatedir=/var/run/quagga --disable-ospfapi</span><br><span class="line">root@a6c398ef7a1f:/home/ospf-mdr# make</span><br><span class="line">root@a6c398ef7a1f:/home/ospf-mdr# make install</span><br></pre></td></tr></table></figure>
+
+<p>make过程中提示缺少头文件，将主机的拷贝过来：</p>
+<p><code>hyh@master:~$ docker cp /usr/include/sys/capability.h n1:/usr/include/sys/capability.h</code></p>
+<p><code>hyh@master:~$ docker cp /usr/include/sys. n1:/usr/include/sys</code></p>
+<p>缺少库文件和gawk：</p>
+<p><code>apt-get install libncurses5-dev</code></p>
+<p><code>apt-get install libreadline-dev</code></p>
+<p><code>apt-get install gawk</code></p>
+<h4 id="3、提交已修改或者安装过软件的容器，生成新的镜像"><a href="#3、提交已修改或者安装过软件的容器，生成新的镜像" class="headerlink" title="3、提交已修改或者安装过软件的容器，生成新的镜像"></a>3、提交已修改或者安装过软件的容器，生成新的镜像</h4><p><code>hyh@master:~$ docker commit n1 ubuntu:core</code></p>
+<p>这样以后通过这个镜像生成的容器就能运行quagga了。</p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
       
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2022" class="archive-year">2022</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/07/19/%E8%AE%B0%E5%BD%95-%E5%9C%A8Docker%E5%AE%B9%E5%99%A8%E4%B8%AD%E5%AE%89%E8%A3%85quagga/" class="archive-article-date">
-  	<time datetime="2022-07-19T08:53:50.574Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-07-19</time>
-</a>
-        </div>
-    	 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/" class="archive-article-date">
-  	<time datetime="2022-06-02T13:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-06-02</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/">记录安装AODV-UU报错的解决方法</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Kernel</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/22/VSCode%E8%BF%9C%E7%A8%8B%E4%BF%AE%E6%94%B9%E5%8F%8A%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/" class="archive-article-date">
-  	<time datetime="2022-05-22T07:54:34.914Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
-</a>
-        </div>
-    	 
-        <div class="article-info info-on-right">
-          
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/05/22/%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%EF%BC%88Kerne%20module%EF%BC%89%E5%AD%A6%E4%B9%A0/" class="archive-article-date">
-  	<time datetime="2022-05-22T02:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/05/22/%E5%86%85%E6%A0%B8%E6%A8%A1%E5%9D%97%EF%BC%88Kerne%20module%EF%BC%89%E5%AD%A6%E4%B9%A0/">内核模块（Kernel module）学习</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Kernel</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/04/28/Quagga(Zebra)%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95%E8%BF%87%E7%A8%8B/" class="archive-article-date">
-  	<time datetime="2022-04-28T08:53:11.381Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-28</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/04/28/Quagga(Zebra)%E6%BA%90%E7%A0%81%E8%B0%83%E8%AF%95%E8%BF%87%E7%A8%8B/">Quagga(Zebra)源码调试过程</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Quagga软路由</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/" class="archive-article-date">
-  	<time datetime="2022-04-25T13:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-25</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/04/25/%E5%86%85%E6%A0%B8%E7%BC%96%E8%AF%91/">内核编译学习</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Kernel</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/04/09/Linux%E7%BD%91%E7%BB%9C%E6%94%B6%E5%8C%85%E8%BF%87%E7%A8%8B/" class="archive-article-date">
-  	<time datetime="2022-04-09T11:01:08.832Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-09</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/04/09/Linux%E7%BD%91%E7%BB%9C%E6%94%B6%E5%8C%85%E8%BF%87%E7%A8%8B/">Linux网络收发包原理（下）</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">网络原理</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2022/04/06/Linux%E7%BD%91%E7%BB%9C%E5%8F%91%E5%8C%85%E8%BF%87%E7%A8%8B/" class="archive-article-date">
-  	<time datetime="2022-04-06T08:48:11.298Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-04-06</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2022/04/06/Linux%E7%BD%91%E7%BB%9C%E5%8F%91%E5%8C%85%E8%BF%87%E7%A8%8B/">Linux网络收发包原理（上）</a>
-    </h1>
-  
-
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">网络原理</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-    
-    
       
-        </div></section>
+
       
+
       
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2021" class="archive-year">2021</a>
+        
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a>
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
         </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/12/28/OVS%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/" class="archive-article-date">
-  	<time datetime="2021-12-28T13:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-12-28</time>
-</a>
-        </div>
-    	 
-  
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/12/28/OVS%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/">OVS常用命令</a>
-    </h1>
-  
+      </div>
+    </span>
+  </div>
+</div>
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">OVS</a>
-        		</li>
-      		
-		</ul>
-	</div>
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+      <img src="//pan.baidu.com/share/qrcode?url=http://carlherman66.github.io/2022/07/19/%E8%AE%B0%E5%BD%95-%E5%9C%A8Docker%E5%AE%B9%E5%99%A8%E4%B8%AD%E5%AE%89%E8%A3%85quagga/" alt="微信分享二维码">
+    </div>
+</div>
 
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
+<div class="mask js-mask"></div>
+      
+      <div class="clearfix"></div>
+    </div>
   </div>
 </article>
+
   
-    
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	<a href="/2021/12/28/OVS%E4%B8%8EDocker/" class="archive-article-date">
-  	<time datetime="2021-12-28T12:49:27.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2021-12-28</time>
-</a>
+<nav id="article-nav">
+  
+  
+    <a href="/2022/06/02/%E8%AE%B0%E5%BD%95%E5%AE%89%E8%A3%85AODV-UU%E6%8A%A5%E9%94%99%E7%9A%84%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">记录安装AODV-UU报错的解决方法</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
         </div>
-    	 
+        
+        
+    </div>
+</aside>
+
+
+
   
-    <h1 itemprop="name">
-      <a class="archive-article-title" href="/2021/12/28/OVS%E4%B8%8EDocker/">OVS与Docker</a>
-    </h1>
+  
   
 
-        <div class="article-info info-on-right">
-          
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">OVS</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Docker</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-          
-
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
   
 
-    
-    <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/archives/page/2/">2</a><a class="extend next" rel="next" href="/archives/page/2/">Next &amp;raquo;</a>
-    </nav>
+  
+
   
 
 
@@ -601,8 +317,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
-		isArchive: true,
+		isPost: true,
+		isArchive: false,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
