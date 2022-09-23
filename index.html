@@ -151,18 +151,24 @@
     <article id="post-记录-在Docker容器中安装quagga" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/07/19/%E8%AE%B0%E5%BD%95-%E5%9C%A8Docker%E5%AE%B9%E5%99%A8%E4%B8%AD%E5%AE%89%E8%A3%85quagga/">记录-在Docker容器中安装quagga</a>
+    </h1>
+  
+
+        
+        <a href="/2022/07/19/%E8%AE%B0%E5%BD%95-%E5%9C%A8Docker%E5%AE%B9%E5%99%A8%E4%B8%AD%E5%AE%89%E8%A3%85quagga/" class="archive-article-date">
+  	<time datetime="2022-07-19T02:25:18.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-07-19</time>
+</a>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <p>toc: true</p>
-<p>title: 记录-在Docker容器中安装quagga</p>
-<p>author: luokui</p>
-<p>tags:</p>
-<ul>
-<li>随笔</li>
-<li>Linux</li>
-<li>Docker</li>
-</ul>
-<h4 id="1、通过Dockerfile创建一个初始的ubuntu镜像"><a href="#1、通过Dockerfile创建一个初始的ubuntu镜像" class="headerlink" title="1、通过Dockerfile创建一个初始的ubuntu镜像"></a>1、通过Dockerfile创建一个初始的ubuntu镜像</h4><p>命令如下，将镜像命名为“ubuntu:core”：</p>
+        <h4 id="1、通过Dockerfile创建一个初始的ubuntu镜像"><a href="#1、通过Dockerfile创建一个初始的ubuntu镜像" class="headerlink" title="1、通过Dockerfile创建一个初始的ubuntu镜像"></a>1、通过Dockerfile创建一个初始的ubuntu镜像</h4><p>命令如下，将镜像命名为“ubuntu:core”：</p>
 <p><code>sudo docker build -t ubuntu:core /etc/docker</code></p>
 <p>Dockerfile文件放在/etc/docker目录下，内容如下：</p>
 <figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu:<span class="number">18.04</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> sed -i <span class="string">&#x27;s#http://archive.ubuntu.com/#http://mirrors.tuna.tsinghua.edu.cn/#&#x27;</span> /etc/apt/sources.list;</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get update</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install -y iproute2 ethtool</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install net-tools</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install iperf3 -y</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install traceroute</span></span><br><span class="line"><span class="keyword">RUN</span><span class="bash"> apt-get install git -y</span></span><br></pre></td></tr></table></figure>
@@ -181,7 +187,7 @@
 
 <p>make过程中提示缺少头文件，将主机的拷贝过来：</p>
 <p><code>hyh@master:~$ docker cp /usr/include/sys/capability.h n1:/usr/include/sys/capability.h</code></p>
-<p><code>hyh@master:~$ docker cp /usr/include/sys. n1:/usr/include/sys</code></p>
+<p><code>hyh@master:~$ docker cp /usr/include/sys/. n1:/usr/include/sys</code></p>
 <p>缺少库文件和gawk：</p>
 <p><code>apt-get install libncurses5-dev</code></p>
 <p><code>apt-get install libreadline-dev</code></p>
@@ -196,6 +202,25 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Linux</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Docker</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -413,6 +438,21 @@
     <article id="post-VSCode远程修改及编译过程" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2022/05/22/VSCode%E8%BF%9C%E7%A8%8B%E4%BF%AE%E6%94%B9%E5%8F%8A%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/">VSCode远程修改及编译过程</a>
+    </h1>
+  
+
+        
+        <a href="/2022/05/22/VSCode%E8%BF%9C%E7%A8%8B%E4%BF%AE%E6%94%B9%E5%8F%8A%E7%BC%96%E8%AF%91%E8%BF%87%E7%A8%8B/" class="archive-article-date">
+  	<time datetime="2022-05-22T09:02:17.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2022-05-22</time>
+</a>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
         <h2 id="VSCode远程修改及编译过程"><a href="#VSCode远程修改及编译过程" class="headerlink" title="VSCode远程修改及编译过程"></a>VSCode远程修改及编译过程</h2><p>VSCode版本号：1.67.2</p>
@@ -477,6 +517,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">随笔</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
